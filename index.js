@@ -40,7 +40,7 @@ client.on('messageCreate', message => {
   const random = Math.random();
 
   // 20%で返信
-  if (random < 0.05) {
+  if (random < 0.5) {
 
     // ランダムなセリフ選択
     const reply =
