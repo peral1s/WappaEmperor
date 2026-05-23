@@ -5,7 +5,10 @@ app.get('/', (req, res) => {
   res.send('Bot is running!');
 });
 
-app.listen(3000);
+// Render用
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Web server started');
+});
 
 const { Client, GatewayIntentBits } = require('discord.js');
 
@@ -39,10 +42,9 @@ client.on('messageCreate', message => {
 
   const random = Math.random();
 
-  // 20%で返信
+  // 1%で返信
   if (random < 0.01) {
 
-    // ランダムなセリフ選択
     const reply =
       replies[Math.floor(Math.random() * replies.length)];
 
