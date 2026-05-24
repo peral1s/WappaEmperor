@@ -94,7 +94,7 @@ client.on('messageCreate', message => {
   }
     if (message.content.includes('/きぅい')) {
 
-      message.channel.send('きぅいくって\nーあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww');
+      message.channel.send('きぅいくってー\nあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww');
 
   }
   
