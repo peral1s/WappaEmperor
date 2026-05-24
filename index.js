@@ -82,7 +82,7 @@ client.on('messageCreate', message => {
     message.channel.send('ずんだもんみたいな語尾やめるのだ');
 
   }
-    if (message.content.includes('トマトの偉大さ')) {
+    if (message.content.includes('トマトの偉大さ1')) {
 
       message.channel.send('トマトって偉大だよね。あのフォルムとか。話すことが多いからなにを話すか悩むな。じゃあとりあe');
 
