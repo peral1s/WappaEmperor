@@ -82,7 +82,32 @@ client.on('messageCreate', message => {
     message.channel.send('ずんだもんみたいな語尾やめるのだ');
 
   }
-  // セックス系検出
+    if (message.content.includes('トマトの偉大さ')) {
+
+      message.channel.send('トマトって偉大だよね。あのフォルムとか。話すことが多いからなにを話すか悩むな。じゃあとりあe');
+
+  }
+    if (message.content.includes('トマトの偉大さ2')) {
+
+      message.channel.send('前回は字数制限でトマトの偉大さを語ることが阻止されたから今回は是非とも聞いてほしいな。初回だからとりa');
+
+  }
+    if (message.content.includes('/きぅい')) {
+
+      message.channel.send('きぅいくって\nーあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww');
+
+  }
+  
+  if (message.content.includes('/あさ')) {
+
+    message.channel.send('あーたーらしーいーあーさがっきったwww\nきぼーおのっあーさーだwww\nよろこーびにむねをひーらけwww\nおーぞーらあーおーげーwww\nらーじおーのーこーえにーwww\nすこやーかなーむーねをーwww\nこのかっおーるかっぜーにひらーけよwww\nそれいっちにっさーんwwwww');
+
+  }
+    if (message.content.includes('いぷしろん')) {
+
+    message.channel.send('https://cdn.discordapp.com/attachments/1193815699630592160/1508109462924165201/IMG_2749.png?ex=6a1457e3&is=6a130663&hm=e877e89dd071fdfdea49ff3f69b2bd90092254af14079285fbc8af88187cada1&');
+
+  }
   const sexWords = [
     'セックス',
     'サックス',
