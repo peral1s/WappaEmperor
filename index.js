@@ -100,8 +100,8 @@ client.on('messageCreate', message => {
   // フェラ系検出
   const feraWords = [
     'ふぇら',
-    'フェラ'
-    'フエラ'
+    'フェラ',
+    'フエラ',
     'ふえら'
   ];
 
