@@ -46,7 +46,7 @@ const replies = [
   'え…/// 死ね',
   'ざぁ〜こ♡',
   'この思考、熱血‼️☝️😎🔥',
-  'ずんだもんみたいな語尾やめるのだ',
+  'https://cdn.discordapp.com/attachments/1502569232574058637/1505454058033643590/quote_1500913065317761116.png?ex=6a13e959&is=6a1297d9&hm=02ee75162ec27416338b5b76cf3953297cfbc1c9c3323ca122c3e6f68eec3a33&',
   'JKに 発情猛けし 王子様 奮い立てども 竿は童か',
   '<:__:1504155267896442910>ドパすぎりゅうぅぅぅぅぅ',
   'もゥまぢ無理'
@@ -64,7 +64,7 @@ client.on('messageCreate', message => {
   // ランダム返信（1%）
   const random = Math.random();
 
-  if (random < 0.005) {
+  if (random < 0.01) {
     const reply =
       replies[Math.floor(Math.random() * replies.length)];
 
@@ -77,9 +77,9 @@ client.on('messageCreate', message => {
 
   }
 
-  if (message.content.includes(' ')) {
+  if (message.content.includes('のだ')) {
 
-    message.channel.send(' ');
+    message.channel.send('ずんだもんみたいな語尾やめるのだ');
 
   }
   // セックス系検出
@@ -95,7 +95,9 @@ client.on('messageCreate', message => {
     'sox',
     'せくす',
     'セクス',
-    'セクシー'
+    'せくしー',
+    'セクシー',
+    '6'
   ];
 
   if (sexWords.some(word => content.includes(word))) {
