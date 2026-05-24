@@ -92,6 +92,18 @@ client.on('messageCreate', message => {
       message.channel.send('前回は字数制限でトマトの偉大さを語ることが阻止されたから今回は是非とも聞いてほしいな。初回だからとりa');
 
   }
+
+    if (message.content.includes('トマトの偉大さ3')) {
+
+    message.channel.send('字数少なすぎだろ！今回はちゃんと喋るからな！時間がないから簡潔にまとめるぞ！まずひとt');
+
+  }
+  
+  if (message.content.includes('トマトの偉大さ4')) {
+
+    message.channel.send('そんなものないよおおおおんwwwww');
+
+  }
     if (message.content.includes('/きぅい')) {
 
       message.channel.send('きぅいくってー\nあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww');
@@ -103,9 +115,22 @@ client.on('messageCreate', message => {
     message.channel.send('あーたーらしーいーあーさがっきったwww\nきぼーおのっあーさーだwww\nよろこーびにむねをひーらけwww\nおーぞーらあーおーげーwww\nらーじおーのーこーえにーwww\nすこやーかなーむーねをーwww\nこのかっおーるかっぜーにひらーけよwww\nそれいっちにっさーんwwwww');
 
   }
-    if (message.content.includes('いぷしろん')) {
+  
+  if (message.content.includes('いぷしろん')) {
 
     message.channel.send('https://cdn.discordapp.com/attachments/1193815699630592160/1508109462924165201/IMG_2749.png?ex=6a1457e3&is=6a130663&hm=e877e89dd071fdfdea49ff3f69b2bd90092254af14079285fbc8af88187cada1&');
+
+  }
+  
+  if (message.content.includes('冷蔵庫')) {
+
+    message.channel.send('京都は日本の首都');
+
+  }
+  
+  if (message.content.includes('社不')) {
+
+    message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1505454038391722055/quote_1505419785767485480.png?ex=6a13e954&is=6a1297d4&hm=4e2c37e9d6f8674c1f7cb5835d35f9e993b21194ecfd42461c226ffb4bf2fe50&');
 
   }
   const sexWords = [
@@ -122,7 +147,7 @@ client.on('messageCreate', message => {
     'セクス',
     'せくしー',
     'セクシー',
-    '6'
+    '6号'
   ];
 
   if (sexWords.some(word => content.includes(word))) {
