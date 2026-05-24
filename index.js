@@ -42,7 +42,7 @@ const replies = [
   'いぷさんが一番えろい',
   'だから彼女いないんだよ',
   'ちっ うっせーな 反省してまーす',
-  '全力で謝るので許して',
+  '全力射精するので許して',
   'え…/// 死ね',
   'ざぁ〜こ♡',
   'この思考、熱血‼️☝️😎🔥',
@@ -76,7 +76,12 @@ client.on('messageCreate', message => {
     message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1506275221743730708/quote_1506271562817343629.png?ex=6a139a5e&is=6a1248de&hm=1c7b801d6573de0bcf727b1f0b5ce141229d4060a76fa53d91a6ce4999feb4ae&');
 
   }
-  
+
+  if (message.content.includes(' ')) {
+
+    message.channel.send(' ');
+
+  }
   // セックス系検出
   const sexWords = [
     'セックス',
