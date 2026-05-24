@@ -87,7 +87,10 @@ client.on('messageCreate', message => {
     'sax',
     'six',
     'sex',
-    'sox'
+    'sox',
+    'せくす',
+    'セクス',
+    'セクシー'
   ];
 
   if (sexWords.some(word => content.includes(word))) {
@@ -98,6 +101,8 @@ client.on('messageCreate', message => {
   const feraWords = [
     'ふぇら',
     'フェラ'
+    'フエラ'
+    'ふえら'
   ];
 
   if (feraWords.some(word => content.includes(word))) {
