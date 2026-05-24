@@ -64,7 +64,7 @@ client.on('messageCreate', message => {
   // ランダム返信（1%）
   const random = Math.random();
 
-  if (random < 0.1) {
+  if (random < 0.005) {
     const reply =
       replies[Math.floor(Math.random() * replies.length)];
 
