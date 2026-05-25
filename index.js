@@ -22,7 +22,7 @@ const client = new Client({
 
 const replies = [
   '# 0.5%の超‼️低確率に当選したあなたにWappaEmperorのご加護が有らんことを'
-
+];
 
 client.once('clientReady', () => {
   console.log('Bot起動！');
@@ -47,7 +47,7 @@ client.on('messageCreate', message => {
   if (message.content.includes('<@1507363518830346371>')) {
 
     const helloReplies = [
-      'https://cdn.discordapp.com/attachments/1502569232574058637/1506275221743730708/quote_1506271562817343629.png?ex=6a139a5e&is=6a1248de&hm=1c7b801d6573de0bcf727b1f0b5ce141229d4060a76fa53d91a6ce4999feb4ae&');
+      'https://cdn.discordapp.com/attachments/1502569232574058637/1506275221743730708/quote_1506271562817343629.png?ex=6a139a5e&is=6a1248de&hm=1c7b801d6573de0bcf727b1f0b5ce141229d4060a76fa53d91a6ce4999feb4ae&',
       '…で？',
       '…和紙が犯す',
       '貴様誰zoy!?',
