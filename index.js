@@ -147,6 +147,27 @@ client.on('messageCreate', message => {
     message.channel.send('Flatbald wwwwwwwwwww');
 
   }
+
+  if (message.content.includes('カートゥーンポテチ')) {
+
+    const helloReplies = [
+      '「カートゥーンポテチ、起動ッ！\nサクサク参上、悪いやつらは塩対応だぜ！」',
+      '「オイル満タン！テンション全開！\nオレはカートゥーンポテチ！今日も世界をカリッと守る！」',
+      '「ポテチだからってナメんなよ？\nこの一枚一枚に、正義が詰まってるんだ！」',
+      '「警告。ポテチ泥棒を検知。\n――排除モード、パリパリ起動。」',
+      '「やあもつ楽民！\n笑いと炭水化物を届けに来た、カートゥーンポテチだ！」',
+      '「バリッと変形！\nスナック界最強ロボ、カートゥーンポテチ参上！！」',
+      '「賞味期限？そんなものは超えてきた。\n未来から来たポテチ型ロボ、カートゥーンポテチだ。」',
+      '「ポテトの魂、メカの力！\n合体ヒーロー・カートゥーンポテチ、オンステージ！」'
+    ];
+    
+  const reply =
+    helloReplies[Math.floor(Math.random() * helloReplies.length)];
+
+  message.channel.send(reply);
+
+  }
+  
   const sexWords = [
     'セックス',
     'サックス',
