@@ -34,7 +34,7 @@ const replies = [
   'お前で 45 る',
   '男というのはエロを求めた時、動体視力、精密動作性、その他なんか凄そうなやつを普段の250%の力で出せるようになるんやで',
   'バイトサボりは僕のせいだよ　でもこの胸騒ぎは君のせい',
-  'flatbald wwwwwww',
+  '射精し切ろうぜ‼️',
   '今朝固めてwwwちょwwwおまwww朝勃ちやんけwww',
   'なんとなく で殴れるほど 安い顔',
   '膝ニーは訳したらニーニーになるんかwww',
@@ -131,6 +131,12 @@ client.on('messageCreate', message => {
   if (message.content.includes('社不')) {
 
     message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1505454038391722055/quote_1505419785767485480.png?ex=6a13e954&is=6a1297d4&hm=4e2c37e9d6f8674c1f7cb5835d35f9e993b21194ecfd42461c226ffb4bf2fe50&');
+
+  }
+  
+  if (message.content.includes('Flatbread')) {
+
+    message.channel.send('Flatbald wwwwwwwwwww');
 
   }
   const sexWords = [
