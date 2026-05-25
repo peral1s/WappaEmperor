@@ -186,7 +186,7 @@ client.on('messageCreate', message => {
   ];
 
   if (sexWords.some(word => content.includes(word))) {
-    message.channel.send('セックスを検出‼️');
+    message.channel.send('https://cdn.discordapp.com/attachments/1193815699630592160/1508487079997345842/quote_1500917870383595641.png?ex=6a15b792&is=6a146612&hm=1cf87b362a621a7292a5e6bf03a873510af4124e8aa091c2df429e40c63c085a&');
   }
 
   // フェラ系検出
@@ -198,7 +198,7 @@ client.on('messageCreate', message => {
   ];
 
   if (feraWords.some(word => content.includes(word))) {
-    message.channel.send('フェラを検出‼️');
+    message.channel.send('https://cdn.discordapp.com/attachments/1193815699630592160/1508487080274038784/quote_1500516328333901965.png?ex=6a15b792&is=6a146612&hm=100793dc956a0aa82e37efef009da54e62352903acd3a3ff64d12c04737a1736&');
   }
 });
 
