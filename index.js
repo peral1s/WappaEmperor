@@ -21,7 +21,7 @@ const client = new Client({
 });
 
 const replies = [
-  '# 0.5%の超‼️低確率に当選したあなたにWappaEmperorのご加護が有らんことを'
+  '# 0.01%の超超超‼️低確率に当選したあなたに\n✨WappaEmperor✨\nのご加護が有らんことを'
 ];
 
 client.once('clientReady', () => {
@@ -36,7 +36,7 @@ client.on('messageCreate', message => {
   // ランダム返信（1%）
   const random = Math.random();
 
-  if (random < 0.001) {
+  if (random < 0.0001) {
 
   const reply =
     replies[Math.floor(Math.random() * replies.length)];
