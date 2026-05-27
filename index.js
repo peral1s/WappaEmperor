@@ -21,7 +21,7 @@ const client = new Client({
 });
 
 const replies = [
-  '# 0.01%の超超超‼️低確率に当選したあなたに\n✨WappaEmperor✨\nのご加護が有らんことを'
+  '# 0.01%の超超超‼️低確率に当選したあなたに\n# ✨WappaEmperor✨\n# のご加護が有らんことを'
 ];
 
 client.once('clientReady', () => {
