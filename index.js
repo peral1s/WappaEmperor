@@ -30,19 +30,20 @@ client.once('clientReady', () => {
 
 client.on('messageCreate', async message => {
 
-  // 初回送信でロール付与
-if (message.channel.id === '1401415423785832468') {
-
-  const role = message.guild.roles.cache.get('1510205076730548305');
-
-  if (
-    role &&
-    !message.member.roles.cache.has(role.id)
-  ) {
-    await message.member.roles.add(role);
-  }
-  
   if (message.author.bot) return;
+
+  // 初回送信でロール付与
+  if (message.channel.id === '1401415423785832468') {
+
+    const role = message.guild.roles.cache.get('1510205076730548305');
+
+    if (
+      role &&
+      !message.member.roles.cache.has(role.id)
+    ) {
+      await message.member.roles.add(role);
+    }
+  }
 
   const content = message.content.toLowerCase();
 
