@@ -33,17 +33,25 @@ client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
   // 初回送信でロール付与
-  if (message.channel.id === '1401415423785832468') {
+if (message.channel.id === '1401415423785832468') {
 
-    const role = message.guild.roles.cache.get('1510205076730548305');
+  const role = message.guild.roles.cache.get('1510205076730548305');
 
-    if (
-      role &&
-      !message.member.roles.cache.has(role.id)
-    ) {
+  console.log('チャンネル検知');
+  console.log('role:', role?.name);
+
+  if (
+    role &&
+    !message.member.roles.cache.has(role.id)
+  ) {
+    try {
       await message.member.roles.add(role);
+      console.log('ロール付与成功');
+    } catch (err) {
+      console.error('ロール付与失敗:', err);
     }
   }
+}
 
   const content = message.content.toLowerCase();
 
