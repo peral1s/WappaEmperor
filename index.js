@@ -84,6 +84,8 @@ if (message.channel.id === '1401415423785832468') {
       '男というのはエロを求めた時、動体視力、精密動作性、その他なんか凄そうなやつを普段の250%の力で出せるようになるんやで',
       'バイトサボりは僕のせいだよ　でもこの胸騒ぎは君のせい',
       '射精し切ろうぜ‼️',
+      'スピキの冷笑\nチョワーwww',
+      'オマーンとか漫湖とか聞いたら失神しそう',
       '今朝固めてwwwちょwwwおまwww朝勃ちやんけwww',
       'なんとなく で殴れるほど 安い顔',
       '膝ニーは訳したらニーニーになるんかwww',
@@ -98,7 +100,16 @@ if (message.channel.id === '1401415423785832468') {
       'https://cdn.discordapp.com/attachments/1502569232574058637/1505454058033643590/quote_1500913065317761116.png?ex=6a13e959&is=6a1297d9&hm=02ee75162ec27416338b5b76cf3953297cfbc1c9c3323ca122c3e6f68eec3a33&',
       'JKに 発情猛けし 王子様 奮い立てども 竿は童か',
       '<:__:1504155267896442910>ドパすぎりゅうぅぅぅぅぅ',
-      'もゥまぢ無理'
+      'もゥまぢ無理',
+      '俺はゲイやぞ',
+      '僕はガイじゃ',
+      'ﾊﾞﾅﾌﾞｦｲｼﾞﾒﾇﾝﾃﾞ…',
+      '真のドパガキは早漏',
+      'だから童帝誓ってもなんのデメリットも無いに決まってんだろ常識的に考えて',
+      
+      'まじギュンギュンギュン搾りすぎて乳',
+      'ドパガキ格付チェック中のGACKTのモノマネ\nﾝﾝﾝﾝﾝあアアアきぃぃんもちいいいあえええええええ
+      'https://cdn.discordapp.com/attachments/1193815699630592160/1512178331473154298/IMG_2862.jpg?ex=6a232551&is=6a21d3d1&hm=d0d855c65ed1572f3dc6dd6acb9072610aab66631e6f845ed4a6dd64a68d3ee2&'
     ];
     
   const reply =
@@ -131,9 +142,16 @@ if (message.channel.id === '1401415423785832468') {
   
   if (message.content.includes('トマトの偉大さ4')) {
 
+    message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376841916497/quote_1506304004966055957.png?ex=6a22e9f2&is=6a219872&hm=46ffbe3e9910b0d684a694f32173590ad4fc35ad0c4dbd02ef0884ec1cea9e9f&');
+
+  }
+
+   if (message.content.includes('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376388800663/quote_1506303741723414579.png?ex=6a22e9f2&is=6a219872&hm=fe14d236e7056b520a64cfd96a1b709cb680ae68a9b4855fa77b288a1725b6f8&')) {
+
     message.channel.send('そんなものないよおおおおんwwwww');
 
   }
+  
     if (message.content.includes('/きぅい')) {
 
       message.channel.send('きぅいくってー\nあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww');
@@ -142,7 +160,7 @@ if (message.channel.id === '1401415423785832468') {
   
   if (message.content.includes('/あさ')) {
 
-    message.channel.send('あーたーらしーいーあーさがっきったwww\nきぼーおのっあーさーだwww\nよろこーびにむねをひーらけwww\nおーぞーらあーおーげーwww\nらーじおーのーこーえにーwww\nすこやーかなーむーねをーwww\nこのかっおーるかっぜーにひらーけよwww\nそれいっちにっさーんwwwww');
+    message.channel.send('あーたーらしーいーあーさがっきったwww\nきぼーおのっあーさーだwww\nよろこーびにむねをひーらけwww\nおーぞーらあーおーげーwww\nらーじおーのーこーえにーwww\nすこやーかなーむーねをーwww\nこのかっおーるかっぜーにひらーけよwww\nそれいっちにっさーんwwwww')
 
   }
   
@@ -167,6 +185,18 @@ if (message.channel.id === '1401415423785832468') {
   if (message.content.includes('Flatbread')) {
 
     message.channel.send('Flatbald wwwwwwwwwww');
+
+  }
+
+  if (message.content.includes('彼女')) {
+
+    message.channel.send('彼女を検出！！！！！！\n嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
+
+  }
+
+  if (message.content.includes('IIドアイ')) {
+
+    message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1512178975886020710/quote_1503055273198354665.png?ex=6a2325ea&is=6a21d46a&hm=436269d39b10d87e66e299c4991816f7263fa0a450656d1271fcab11163fd1e0&');
 
   }
 
