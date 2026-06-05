@@ -180,13 +180,13 @@ if (message.channel.id === '1401415423785832468') {
   
   if (message.content.includes('トマトの偉大さ4')) {
 
-    message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376841916497/quote_1506304004966055957.png?ex=6a22e9f2&is=6a219872&hm=46ffbe3e9910b0d684a694f32173590ad4fc35ad0c4dbd02ef0884ec1cea9e9f&');
+    message.channel.send('そんなものないよおおおんwwwww');
 
   }
 
    if (message.content.includes('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376388800663/quote_1506303741723414579.png?ex=6a22e9f2&is=6a219872&hm=fe14d236e7056b520a64cfd96a1b709cb680ae68a9b4855fa77b288a1725b6f8&')) {
 
-    message.channel.send('そんなものないよおおおおんwwwww');
+    message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376841916497/quote_1506304004966055957.png?ex=6a22e9f2&is=6a219872&hm=46ffbe3e9910b0d684a694f32173590ad4fc35ad0c4dbd02ef0884ec1cea9e9f&');
 
   }
   
