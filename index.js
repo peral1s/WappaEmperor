@@ -289,7 +289,8 @@ if (message.channel.id === '1401415423785832468') {
     'ふぇら',
     'フェラ',
     'フエラ',
-    'ふえら'
+    'ふえら',
+    'fella'
   ];
 
   if (feraWords.some(word => content.includes(word))) {
