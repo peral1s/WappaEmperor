@@ -97,7 +97,7 @@ if (message.channel.id === '1401415423785832468') {
   // ランダム返信（1%）
   const random = Math.random();
 
-  if (random < 1) {
+  if (random < 0.01) {
 
   const reply =
     replies[Math.floor(Math.random() * replies.length)];
