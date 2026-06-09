@@ -191,7 +191,7 @@ if (message.channel.id === '1401415423785832468') {
 
   }
 
-  if (content.includes('あお')) {
+  if (content.includes('/あお')) {
     
   message.channel.send('女性と一夜を過〜ごし〜たら〜\nゴムを忘れてました〜\n# 着床‼️‼️\n子"埋め"大夫');
 
