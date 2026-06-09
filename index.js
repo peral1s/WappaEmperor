@@ -173,7 +173,7 @@ if (message.channel.id === '1401415423785832468') {
 
   }
 
-  if (message.content.includes('6号')) {
+  if (message.content.includes('/6号')) {
 
     message.channel.send('よしかるを検出‼️');
 
