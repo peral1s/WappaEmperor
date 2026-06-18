@@ -276,7 +276,7 @@ if (message.channel.id === '1401415423785832468') {
   ];
 
   if (sexWords.some(word => content.includes(word))) {
-    message.channel.send('# セックスを検出‼️\n-# 汚い言葉が好きな人はちょっと🫸僕たちお紳士なので…');
+    message.channel.send('# セックスを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
 
   // フェラ系検出
@@ -289,7 +289,7 @@ if (message.channel.id === '1401415423785832468') {
   ];
 
   if (feraWords.some(word => content.includes(word))) {
-    message.channel.send('フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと🫸僕たちお紳士なので…');
+    message.channel.send('フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
 });
 
