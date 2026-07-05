@@ -208,7 +208,7 @@ client.on('messageCreate', async message => {
   const content = message.content.toLowerCase();
 
   // ランダム返信（1%）
-  if (Math.random() < 0.01) {
+  if (Math.random() < 0.5) {
     const reply = replies[Math.floor(Math.random() * replies.length)];
     message.reply(reply);
   }
