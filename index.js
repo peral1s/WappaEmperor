@@ -159,7 +159,7 @@ const replies = [
       'https://cdn.discordapp.com/attachments/1193815699630592160/1512178331473154298/IMG_2862.jpg?ex=6a232551&is=6a21d3d1&hm=d0d855c65ed1572f3dc6dd6acb9072610aab66631e6f845ed4a6dd64a68d3ee2&'
     ];
 
-client.once('clientReady', async () => {
+client.once('ready', async () => {
   await mongo.connect();
 
   const db = mongo.db("discordbot");
