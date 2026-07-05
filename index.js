@@ -136,7 +136,7 @@ async function updateUserStats(userId, username, isLucky = false) {
     $set: { name: username },
     $inc: { 
       mention: 1,
-      lucky: isLucky ? 1 : 0     // これでLucky時に +1 される
+      lucky: isLucky ? 1 : 0
     }
   };
 
@@ -147,15 +147,6 @@ async function updateUserStats(userId, username, isLucky = false) {
   );
 
   console.log(`統計更新: ${username} | mention+1 | lucky: ${isLucky}`);
-}
-
-  await statsCollection.updateOne(
-    { _id: userId },
-    update,
-    { upsert: true }
-  );
-
-  console.log(`統計更新: ${username} (Lucky: ${isLucky})`);
 }
 
 client.once('ready', async () => {
@@ -216,16 +207,13 @@ client.on('messageCreate', async message => {
 
   const content = message.content.toLowerCase();
 
-    // Lucky抽選（1%）
-    if (Math.random() < 0.01) {
-      isLucky = true;
-      const luckyReply = replies[Math.floor(Math.random() * replies.length)];
-      message.channel.send(luckyReply);
-      
-      console.log(`🎉 LUCKY発動！ ${username}`);   // ← 追加
-    }
+  // 全体ランダム返信（1%）
+  if (Math.random() < 0.01) {
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    message.reply(reply);
+  }
 
-    // 和紙メンション処理
+  // 和紙メンション処理
   if (message.content.includes('<@1507363518830346371>') || 
       message.mentions.has(client.user)) {
 
@@ -241,12 +229,12 @@ client.on('messageCreate', async message => {
     if (Math.random() < 0.01) {
       isLucky = true;
       const luckyReply = replies[Math.floor(Math.random() * replies.length)];
-      message.channel.send(luckyReply);   // Lucky時にもう1個
+      message.channel.send(luckyReply);
+      console.log(`🎉 LUCKY発動！ ${username}`);
     }
 
     await updateUserStats(id, username, isLucky);
 
-    // デバッグログ
     console.log(`✅ 和紙メンション: ${username} (Lucky: ${isLucky})`);
   }
 
