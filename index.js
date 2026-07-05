@@ -46,7 +46,7 @@ const replies = [
   '和紙のオリ？212cm128kgの漢と177cm70kgのおとなぁのおねぇさんよ',
   '和紙はそこまで思ってなかったから意外だなぁ',
   '<@1388807489012633700>童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい',
-  '和紙は生涯童帝を誓った漢、崩せる様な人は相当な人格者で無いと無理よ',
+  '和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ',
   'まだ求めるのは童貞、それすら捨てた者が童帝だ',
   '<@1388807489012633700>と言うか人の目を気にするのって何でぇ？和紙分からんからおせーて？',
   '<@1388807489012633700>あ、和紙はレズもせーへきにはなりません',
@@ -131,7 +131,6 @@ async function getAllStats() {
   return stats;
 }
 
-// 指定した項目（'mention' または 'lucky'）だけを+1できるように修正
 async function updateUserStats(userId, username, statsType) {
   const incData = {};
   if (statsType === 'mention') incData.mention = 1;
@@ -213,28 +212,26 @@ client.on('messageCreate', async message => {
   const username = message.author.username;
 
   // ==========================================
-  // 全体ランダム返信（50%）※luckyだけを+1する
+  // 全体ランダム返信（1%）※リプライに変更・luckyを+1
   // ==========================================
-  if (Math.random() < 0.5) {
+  if (Math.random() < 0.01) {
     const luckyReply = replies[Math.floor(Math.random() * replies.length)];
-    await message.channel.send("🎉 **Lucky発動！** " + luckyReply);
+    // リプライ形式で送信し、装飾テキストを削除
+    await message.reply(luckyReply);
     
-    // luckyを+1、かつreturnしないので下のキーワード判定も動く
     await updateUserStats(id, username, 'lucky'); 
     console.log(`🎉 全体LUCKY発動・記録: ${username}`);
   }
 
   // ==========================================
-  // 和紙メンション処理（1%の不要な処理は完全削除）
+  // 和紙メンション処理
   // ==========================================
   if (message.content.includes('<@1507363518830346371>') || 
       message.mentions.has(client.user)) {
 
-    // メイン返信（必ず送る）
     const mainReply = replies[Math.floor(Math.random() * replies.length)];
     await message.channel.send(mainReply);
 
-    // メンションされたので無条件で mention だけを +1
     await updateUserStats(id, username, 'mention');
 
     console.log(`✅ 和紙メンション: ${username}`);
@@ -320,7 +317,7 @@ client.on('messageCreate', async message => {
       'そーいやRPG得意？',
       '童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい',
       '和紙のオリ？212cm128kgの漢と177cm70kgのおとなぁのおねぇさんよ',
-      '和紙は生涯童帝を誓った漢、崩せる様な人は相当な人格者で無いと無理よ',
+      '和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ',
       'まだ求めるのは童貞、それすら捨てた者が童帝だ',
       'と言うか人の目を気にするのって何でぇ？和紙分からんからおせーて？',
       'あ、和紙はレズもせーへきにはなりません',
@@ -355,7 +352,7 @@ client.on('messageCreate', async message => {
   }
 
   if (message.content.includes('彼女')) {
-    message.channel.send('彼女を検出！！！！！！\n嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
+    message.channel.send('彼女を検出！！！！！！\n嫉嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
   }
 
   if (message.content.includes('IIドアイ')) {
