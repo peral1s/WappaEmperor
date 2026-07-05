@@ -81,7 +81,7 @@ const replies = [
   'この思考、熱血‼️☝️😎🔥',
   'https://cdn.discordapp.com/attachments/1502569232574058637/1505454058033643590/quote_1500913065317761116.png?ex=6a13e959&is=6a1297d9&hm=02ee75162ec27416338b5b76cf3953297cfbc1c9c3323ca122c3e6f68eec3a33&',
   'JKに 発情猛けし 王子様 奮い立てども 竿は童か',
-  '<:__:1504155267896442910>ドパすぎりゅうぅぅぅぅぅ',
+  '<:__:1504155267896442910>ドパすぎりゅうゥゥゥゥゥ',
   'もゥまぢ無理',
   '女性と一夜を過〜ごし〜たら〜\nゴムを忘れてました〜\n# 着床‼️‼️\n 子"埋め"大夫',
   '俺はゲイやぞ',
@@ -95,7 +95,7 @@ const replies = [
   '毛根、もうこんだけしかないんか…',
   '水酸化物イオンの覚え方\n『おぉえっちじゃない…🙃』',
   'ちな臭素はBr-やからうんこと掛けてブリーwwwwで覚えれる',
-  'うどんもえろもぶっかけが一番なんだよな',
+  'うどんもえろもぶっかけが一番んだよな',
   'ぱちゅんぱちゅ だめつだめえつ 中に出せ',
   '小児科で小2を承認wwwwwww',
   '甘味、苦味、酸味、塩味、旨味、女神ってかwwww',
@@ -140,13 +140,13 @@ async function updateUserStats(userId, username, isLucky = false) {
     }
   };
 
-  await statsCollection.updateOne(
+  const result = await statsCollection.updateOne(
     { _id: userId },
     update,
     { upsert: true }
   );
 
-  console.log(`統計更新: ${username} | mention+1 | lucky: ${isLucky}`);
+  console.log(`統計更新: ${username} | mention+1 | lucky: ${isLucky} | matched: ${result.matchedCount}, upserted: ${result.upsertedCount}`);
 }
 
 client.once('ready', async () => {
@@ -191,6 +191,7 @@ client.once('ready', async () => {
 client.on('messageCreate', async message => {
 
   if (message.author.bot) return;
+  if (!message.guild) return; // DM対策
 
   // 初回送信でロール付与
   if (message.channel.id === '1401415423785832468') {
@@ -206,38 +207,47 @@ client.on('messageCreate', async message => {
   }
 
   const content = message.content.toLowerCase();
+  const id = message.author.id;
+  const username = message.author.username;
 
-  // 全体ランダム返信（1%）
+  // ==========================================
+  // 全体ランダム返信（50%）※記録はしない、returnもしない
+  // ==========================================
   if (Math.random() < 0.5) {
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    message.reply(reply);
+    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+    await message.channel.send("🎉 **Lucky発動！** " + randomReply);
+    console.log(`🎉 全体ランダム返信発動: ${username}`);
   }
 
-  // 和紙メンション処理
+  // ==========================================
+  // 和紙メンション処理（記録をつけるのはここだけ）
+  // ==========================================
   if (message.content.includes('<@1507363518830346371>') || 
       message.mentions.has(client.user)) {
 
-    const id = message.author.id;
-    const username = message.author.username;
     let isLucky = false;
 
     // メイン返信（必ず送る）
     const mainReply = replies[Math.floor(Math.random() * replies.length)];
-    message.channel.send(mainReply);
+    await message.channel.send(mainReply);
 
-    // Lucky抽選（1%）
+    // メンション時のLucky抽選（1%）
     if (Math.random() < 0.01) {
       isLucky = true;
       const luckyReply = replies[Math.floor(Math.random() * replies.length)];
-      message.channel.send(luckyReply);
-      console.log(`🎉 LUCKY発動！ ${username}`);
+      await message.channel.send(luckyReply);
+      console.log(`🎉 メンション1% LUCKY発動！ ${username}`);
     }
 
+    // 無条件でmention+1、1%当選時のみlucky+1
     await updateUserStats(id, username, isLucky);
 
     console.log(`✅ 和紙メンション: ${username} (Lucky: ${isLucky})`);
   }
 
+  // ==========================================
+  // キーワード判定
+  // ==========================================
   if (message.content.includes('のだ')) {
     message.channel.send('ずんだもんみたいな語尾やめるのだ');
   }
@@ -350,7 +360,7 @@ client.on('messageCreate', async message => {
   }
 
   if (message.content.includes('彼女')) {
-    message.channel.send('彼女を検出！！！！！！\n嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
+    message.channel.send('彼女を検出！！！！！！\n嫉嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
   }
 
   if (message.content.includes('IIドアイ')) {
@@ -381,9 +391,9 @@ client.on('messageCreate', async message => {
     message.channel.send('# セックスを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
 
-  const feraWords = ['ふぇら', 'フェラ', 'フエラ', 'ふえら', 'fella'];
+  const fellaWords = ['ふぇら', 'フェラ', 'フエラ', 'ふえら', 'fella'];
 
-  if (feraWords.some(word => content.includes(word))) {
+  if (fellaWords.some(word => content.includes(word))) {
     message.channel.send('フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
 });
