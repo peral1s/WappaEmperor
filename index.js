@@ -134,18 +134,19 @@ async function getAllStats() {
 async function updateUserStats(userId, username, isLucky = false) {
   const update = {
     $set: { name: username },
-    $inc: { mention: 1 }
+    $inc: { 
+      mention: 1,
+      lucky: isLucky ? 1 : 0 
+    }
   };
-
-  if (isLucky) {
-    update.$inc.lucky = 1;
-  }
 
   await statsCollection.updateOne(
     { _id: userId },
     update,
     { upsert: true }
   );
+
+  console.log(`統計更新: ${username} (Lucky: ${isLucky})`);
 }
 
 client.once('ready', async () => {
