@@ -1,15 +1,49 @@
+const { MongoClient } = require('mongodb');
+
+const mongo = new MongoClient(process.env.MONGODB_URI);
+
+let statsCollection;
+
 const express = require('express');
 const fs = require('fs');
 
 const STATS_FILE = './stats.json';
 
-function loadStats() {
-  if (!fs.existsSync(STATS_FILE)) return {};
-  return JSON.parse(fs.readFileSync(STATS_FILE, 'utf8'));
+async function loadStats() {
+  const docs = await statsCollection.find().toArray();
+
+  const stats = {};
+
+  for (const doc of docs) {
+    stats[doc._id] = {
+      name: doc.name,
+      mention: doc.mention,
+      lucky: doc.lucky
+    };
+  }
+
+  return stats;
 }
 
-function saveStats(stats) {
-  fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
+async function saveStats(stats) {
+  const bulk = [];
+
+  for (const id in stats) {
+    bulk.push({
+      replaceOne: {
+        filter: { _id: id },
+        replacement: {
+          _id: id,
+          ...stats[id]
+        },
+        upsert: true
+      }
+    });
+  }
+
+  if (bulk.length > 0) {
+    await statsCollection.bulkWrite(bulk);
+  }
 }
 const app = express();
 
@@ -126,6 +160,14 @@ const replies = [
     ];
 
 client.once('clientReady', async () => {
+  await mongo.connect();
+
+  const db = mongo.db("discordbot");
+
+  statsCollection = db.collection("stats");
+
+  console.log("MongoDB接続完了");
+  
   console.log('Bot起動！');
 
   const commands = [
@@ -198,7 +240,7 @@ if (message.channel.id === '1401415423785832468') {
 
 if (message.content.includes('<@1507363518830346371>')) {
 
-  const stats = loadStats();
+  const stats = await loadStats();
 
   const id = message.author.id;
 
@@ -224,7 +266,7 @@ if (message.content.includes('<@1507363518830346371>')) {
     message.channel.send(reply);
   }
 
-  saveStats(stats);
+  await saveStats(stats);
 }
 
   if (message.content.includes('のだ')) {
@@ -446,7 +488,7 @@ client.on('interactionCreate', async interaction => {
 
   if (!interaction.isChatInputCommand()) return;
 
-  const stats = loadStats();
+  const stats = await loadStats();
 
   // =======================
   // /log
