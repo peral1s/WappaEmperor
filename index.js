@@ -213,9 +213,9 @@ client.on('messageCreate', async message => {
   const username = message.author.username;
 
   // ==========================================
-  // 全体ランダム返信（50%）
+  // 全体ランダム返信（1%）
   // ==========================================
-  if (Math.random() < 0.5) {
+  if (Math.random() < 0.01) {
     const luckyReply = replies[Math.floor(Math.random() * replies.length)];
     await message.reply(luckyReply);
     
