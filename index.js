@@ -136,9 +136,18 @@ async function updateUserStats(userId, username, isLucky = false) {
     $set: { name: username },
     $inc: { 
       mention: 1,
-      lucky: isLucky ? 1 : 0 
+      lucky: isLucky ? 1 : 0     // これでLucky時に +1 される
     }
   };
+
+  await statsCollection.updateOne(
+    { _id: userId },
+    update,
+    { upsert: true }
+  );
+
+  console.log(`統計更新: ${username} | mention+1 | lucky: ${isLucky}`);
+}
 
   await statsCollection.updateOne(
     { _id: userId },
@@ -207,11 +216,14 @@ client.on('messageCreate', async message => {
 
   const content = message.content.toLowerCase();
 
-  // ランダム返信（1%）
-  if (Math.random() < 0.5) {
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    message.reply(reply);
-  }
+    // Lucky抽選（1%）
+    if (Math.random() < 0.01) {
+      isLucky = true;
+      const luckyReply = replies[Math.floor(Math.random() * replies.length)];
+      message.channel.send(luckyReply);
+      
+      console.log(`🎉 LUCKY発動！ ${username}`);   // ← 追加
+    }
 
     // 和紙メンション処理
   if (message.content.includes('<@1507363518830346371>') || 
