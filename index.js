@@ -95,7 +95,7 @@ const replies = [
   '毛根、もうこんだけしかないんか…',
   '水酸化物イオンの覚え方\n『おぉえっちじゃない…🙃』',
   'ちな臭素はBr-やからうんこと掛けてブリーwwwwで覚えれる',
-  'うどんもえろもぶっかけが一番んだよな',
+  'うどんもえろもぶっかけが一番なんだよな',
   'ぱちゅんぱちゅ だめつだめえつ 中に出せ',
   '小児科で小2を承認wwwwwww',
   '甘味、苦味、酸味、塩味、旨味、女神ってかwwww',
@@ -131,13 +131,15 @@ async function getAllStats() {
   return stats;
 }
 
-async function updateUserStats(userId, username, isLucky = false) {
+// 指定した項目（'mention' または 'lucky'）だけを+1できるように修正
+async function updateUserStats(userId, username, statsType) {
+  const incData = {};
+  if (statsType === 'mention') incData.mention = 1;
+  if (statsType === 'lucky') incData.lucky = 1;
+
   const update = {
     $set: { name: username },
-    $inc: { 
-      mention: 1,
-      lucky: isLucky ? 1 : 0
-    }
+    $inc: incData
   };
 
   const result = await statsCollection.updateOne(
@@ -146,7 +148,7 @@ async function updateUserStats(userId, username, isLucky = false) {
     { upsert: true }
   );
 
-  console.log(`統計更新: ${username} | mention+1 | lucky: ${isLucky} | matched: ${result.matchedCount}, upserted: ${result.upsertedCount}`);
+  console.log(`統計更新: ${username} | ${statsType}+1 | matched: ${result.matchedCount}, upserted: ${result.upsertedCount}`);
 }
 
 client.once('ready', async () => {
@@ -211,38 +213,31 @@ client.on('messageCreate', async message => {
   const username = message.author.username;
 
   // ==========================================
-  // 全体ランダム返信（50%）※記録はしない、returnもしない
+  // 全体ランダム返信（50%）※luckyだけを+1する
   // ==========================================
   if (Math.random() < 0.5) {
-    const randomReply = replies[Math.floor(Math.random() * replies.length)];
-    await message.channel.send("🎉 **Lucky発動！** " + randomReply);
-    console.log(`🎉 全体ランダム返信発動: ${username}`);
+    const luckyReply = replies[Math.floor(Math.random() * replies.length)];
+    await message.channel.send("🎉 **Lucky発動！** " + luckyReply);
+    
+    // luckyを+1、かつreturnしないので下のキーワード判定も動く
+    await updateUserStats(id, username, 'lucky'); 
+    console.log(`🎉 全体LUCKY発動・記録: ${username}`);
   }
 
   // ==========================================
-  // 和紙メンション処理（記録をつけるのはここだけ）
+  // 和紙メンション処理（1%の不要な処理は完全削除）
   // ==========================================
   if (message.content.includes('<@1507363518830346371>') || 
       message.mentions.has(client.user)) {
-
-    let isLucky = false;
 
     // メイン返信（必ず送る）
     const mainReply = replies[Math.floor(Math.random() * replies.length)];
     await message.channel.send(mainReply);
 
-    // メンション時のLucky抽選（1%）
-    if (Math.random() < 0.01) {
-      isLucky = true;
-      const luckyReply = replies[Math.floor(Math.random() * replies.length)];
-      await message.channel.send(luckyReply);
-      console.log(`🎉 メンション1% LUCKY発動！ ${username}`);
-    }
+    // メンションされたので無条件で mention だけを +1
+    await updateUserStats(id, username, 'mention');
 
-    // 無条件でmention+1、1%当選時のみlucky+1
-    await updateUserStats(id, username, isLucky);
-
-    console.log(`✅ 和紙メンション: ${username} (Lucky: ${isLucky})`);
+    console.log(`✅ 和紙メンション: ${username}`);
   }
 
   // ==========================================
@@ -268,7 +263,7 @@ client.on('messageCreate', async message => {
     message.channel.send('そんなものないよおおおんwwwww');
   }
 
-  if (message.content.includes('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376388800663/quote_1506303741723414579.png?ex=6a22e9f2&is=6a219872&hm=fe14d236e7056b520a64cfd96a1b709cb680ae68a9b4855fa77b288a1725b6f8&')) {
+  if (message.content.includes('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376388800663/quote_1503055273198354665.png?ex=6a22e9f2&is=6a219872&hm=fe14d236e7056b520a64cfd96a1b709cb680ae68a9b4855fa77b288a1725b6f8&')) {
     message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1506316376841916497/quote_1506304004966055957.png?ex=6a22e9f2&is=6a219872&hm=46ffbe3e9910b0d684a694f32173590ad4fc35ad0c4dbd02ef0884ec1cea9e9f&');
   }
 
@@ -360,7 +355,7 @@ client.on('messageCreate', async message => {
   }
 
   if (message.content.includes('彼女')) {
-    message.channel.send('彼女を検出！！！！！！\n嫉嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
+    message.channel.send('彼女を検出！！！！！！\n嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
   }
 
   if (message.content.includes('IIドアイ')) {
