@@ -1,4 +1,16 @@
 const express = require('express');
+const fs = require('fs');
+
+const STATS_FILE = './stats.json';
+
+function loadStats() {
+  if (!fs.existsSync(STATS_FILE)) return {};
+  return JSON.parse(fs.readFileSync(STATS_FILE, 'utf8'));
+}
+
+function saveStats(stats) {
+  fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
+}
 const app = express();
 
 app.get('/', (req, res) => {
@@ -10,7 +22,14 @@ app.listen(process.env.PORT || 3000, () => {
   console.log('Web server started');
 });
 
-const { Client, GatewayIntentBits } = require('discord.js');
+const {
+  Client,
+  GatewayIntentBits,
+  REST,
+  Routes,
+  SlashCommandBuilder,
+  EmbedBuilder
+} = require('discord.js');
 
 const client = new Client({
   intents: [
@@ -106,8 +125,37 @@ const replies = [
       'https://cdn.discordapp.com/attachments/1193815699630592160/1512178331473154298/IMG_2862.jpg?ex=6a232551&is=6a21d3d1&hm=d0d855c65ed1572f3dc6dd6acb9072610aab66631e6f845ed4a6dd64a68d3ee2&'
     ];
 
-client.once('clientReady', () => {
+client.once('clientReady', async () => {
   console.log('Bot起動！');
+
+  const commands = [
+    new SlashCommandBuilder()
+      .setName('log')
+      .setDescription('…貴方達の和紙への気持ちが見れるのだ')
+      .addUserOption(option =>
+        option
+          .setName('user')
+          .setDescription('誰の記録を見たいのだ')
+          .setRequired(false)
+      ),
+
+    new SlashCommandBuilder()
+      .setName('rank')
+      .setDescription('和紙を呼び出したランキングを見れるのだ'),
+
+    new SlashCommandBuilder()
+      .setName('luck')
+      .setDescription('和紙が応じたランキングを見れるのだ')
+  ].map(cmd => cmd.toJSON());
+
+  const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+
+  await rest.put(
+    Routes.applicationCommands(client.user.id),
+    { body: commands }
+  );
+
+  console.log('スラッシュコマンド登録完了');
 });
 
 client.on('messageCreate', async message => {
@@ -148,12 +196,35 @@ if (message.channel.id === '1401415423785832468') {
   message.reply(reply);
 }
 
-  if (message.content.includes('<@1507363518830346371>')) {
-    
-  const reply =
-    replies[Math.floor(Math.random() * replies.length)];
+if (message.content.includes('<@1507363518830346371>')) {
 
-  message.channel.send(reply);
+  const stats = loadStats();
+
+  const id = message.author.id;
+
+  if (!stats[id]) {
+    stats[id] = {
+      name: message.author.username,
+      mention: 0,
+      lucky: 0
+    };
+  }
+
+  stats[id].name = message.author.username;
+  stats[id].mention++;
+
+  // 1%抽選
+  if (Math.random() < 0.01) {
+
+    stats[id].lucky++;
+
+    const reply =
+      replies[Math.floor(Math.random() * replies.length)];
+
+    message.channel.send(reply);
+  }
+
+  saveStats(stats);
 }
 
   if (message.content.includes('のだ')) {
@@ -369,6 +440,121 @@ if (message.channel.id === '1401415423785832468') {
   if (feraWords.some(word => content.includes(word))) {
     message.channel.send('フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
+});
+
+client.on('interactionCreate', async interaction => {
+
+  if (!interaction.isChatInputCommand()) return;
+
+  const stats = loadStats();
+
+  // =======================
+  // /log
+  // =======================
+
+  if (interaction.commandName === 'log') {
+
+    const target =
+      interaction.options.getUser('user') ||
+      interaction.user;
+
+    const data = stats[target.id];
+
+    if (!data) {
+      return interaction.reply({
+        content: '…和紙をまだ呼び出していないのだ',
+        ephemeral: true
+      });
+    }
+
+    const embed = new EmbedBuilder()
+      .setColor(0x8B5A2B)
+      .setTitle(`${target.username}の記録`)
+      .setThumbnail(client.user.displayAvatarURL())
+      .setDescription(
+`**和紙を呼び出した回数**
+**${data.mention}**回
+
+**和紙が応じた回数**
+**${data.lucky}**回`
+
+      )
+      .setFooter({
+        text: '…もっと和紙を呼び出すのだ\nあ〜せや、貴方RPGって得意？'
+      });
+
+    return interaction.reply({ embeds: [embed] });
+  }
+
+  // =======================
+  // /rank
+  // =======================
+
+  if (interaction.commandName === 'rank') {
+
+    const ranking = Object.values(stats)
+      .sort((a, b) => b.mention - a.mention)
+      .slice(0, 5);
+
+    const total = Object.values(stats)
+      .reduce((sum, u) => sum + u.mention, 0);
+
+    const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+
+    let text = `累計 **${total}**回 和紙を呼び出したのだ\n\n`;
+
+    ranking.forEach((u, i) => {
+      text += `**${medals[i]} 第${i + 1}位：${u.mention}回**\n${u.name}\n\n`;
+    });
+
+    const embed = new EmbedBuilder()
+      .setColor(0x8B5A2B)
+      .setTitle("和紙を呼び出したランキング")
+      .setThumbnail(client.user.displayAvatarURL())
+      .setDescription(text)
+      .setFooter({
+        text: "…もっと和紙を呼び出すのだ",
+        iconURL: client.user.displayAvatarURL()
+      });
+
+    return interaction.reply({ embeds: [embed] });
+  }
+
+  // =======================
+  // /luck
+  // =======================
+
+  if (interaction.commandName === 'luck') {
+
+    const ranking = Object.values(stats)
+      .sort((a, b) => b.lucky - a.lucky)
+      .filter(u => u.lucky > 0)
+      .slice(0, 5);
+
+    const total = Object.values(stats)
+      .reduce((sum, u) => sum + u.lucky, 0);
+
+    const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+
+    let text = `累計 **${total}**回 和紙が応じてあげたのだ\n\n`;
+
+    ranking.forEach((u, i) => {
+      text += `**${medals[i]} 第${i + 1}位：${u.lucky}回**\n${u.name}\n\n`;
+    });
+
+    const embed = new EmbedBuilder()
+      .setColor(0x8B5A2B)
+      .setTitle("和紙が応じたランキング")
+      .setThumbnail(client.user.displayAvatarURL())
+      .setDescription(text)
+      .setFooter({
+        text: "…日頃の行いが足りないのだ",
+        iconURL: client.user.displayAvatarURL()
+      });
+
+    return interaction.reply({ embeds: [embed] });
+  }
+
 });
 
 client.login(process.env.TOKEN);
