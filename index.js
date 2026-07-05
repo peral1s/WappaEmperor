@@ -90,7 +90,7 @@ const replies = [
   '朝の光の中でッｪｪｪ♪ah✨\n朝の光の中でッｪｪｪ♪ah✨ah✨ahahah✨\n光にAhhhhhhhhhhhhhh✨☀️',
   '# えっちだフォー！',
   'ケツから穿血\n穿ケツ',
-  '収録10時からで今の今まで寝落ち',
+  '収録10時からで今の午前寝落ち',
   '毛根はもう来んで',
   '毛根、もうこんだけしかないんか…',
   '水酸化物イオンの覚え方\n『おぉえっちじゃない…🙃』',
@@ -123,6 +123,7 @@ async function getAllStats() {
   const stats = {};
   for (const doc of docs) {
     stats[doc._id] = {
+      id: doc._id, // サーバーから名前を引っ張るためにIDを保持
       name: doc.name,
       mention: doc.mention || 0,
       lucky: doc.lucky || 0
@@ -212,11 +213,10 @@ client.on('messageCreate', async message => {
   const username = message.author.username;
 
   // ==========================================
-  // 全体ランダム返信（1%）※リプライに変更・luckyを+1
+  // 全体ランダム返信（50%）
   // ==========================================
-  if (Math.random() < 0.01) {
+  if (Math.random() < 0.5) {
     const luckyReply = replies[Math.floor(Math.random() * replies.length)];
-    // リプライ形式で送信し、装飾テキストを削除
     await message.reply(luckyReply);
     
     await updateUserStats(id, username, 'lucky'); 
@@ -406,9 +406,13 @@ client.on('interactionCreate', async interaction => {
       });
     }
 
+    // コマンドが実行されたサーバー内での表示名を取得（なければアカウントのユーザー名）
+    const member = interaction.guild.members.cache.get(target.id);
+    const serverName = member ? member.displayName : target.username;
+
     const embed = new EmbedBuilder()
       .setColor(0x8B5A2B)
-      .setTitle(`${target.username}の記録`)
+      .setTitle(`${serverName}の記録`)
       .setThumbnail(client.user.displayAvatarURL())
       .setDescription(
 `**和紙を呼び出した回数**
@@ -425,6 +429,9 @@ client.on('interactionCreate', async interaction => {
   }
 
   if (interaction.commandName === 'rank') {
+    // タイムアウトを防ぐため、「考え中...」の状態を作る
+    await interaction.deferReply();
+
     const ranking = Object.values(stats)
       .sort((a, b) => b.mention - a.mention)
       .slice(0, 5);
@@ -435,9 +442,20 @@ client.on('interactionCreate', async interaction => {
 
     let text = `累計 **${total}**回 和紙を呼び出したのだ\n\n`;
 
-    ranking.forEach((u, i) => {
-      text += `**${medals[i]} 第${i + 1}位：${u.mention}回**\n${u.name}\n\n`;
-    });
+    // サーバー内の表示名をリアルタイム取得するループ
+    for (let i = 0; i < ranking.length; i++) {
+      const u = ranking[i];
+      let displayName = u.name; // 初期値はDB保存名
+
+      try {
+        const member = await interaction.guild.members.fetch(u.id);
+        if (member) displayName = member.displayName; // 現在のサーバーでの名前に上書き
+      } catch (err) {
+        // ユーザーが脱退している場合などはそのまま
+      }
+
+      text += `**${medals[i]} 第${i + 1}位：${u.mention}回**\n${displayName}\n\n`;
+    }
 
     const embed = new EmbedBuilder()
       .setColor(0x8B5A2B)
@@ -446,10 +464,13 @@ client.on('interactionCreate', async interaction => {
       .setDescription(text)
       .setFooter({ text: "…もっと和紙を呼び出すのだ" });
 
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({ embeds: [embed] });
   }
 
   if (interaction.commandName === 'luck') {
+    // タイムアウトを防ぐため、「考え中...」の状態を作る
+    await interaction.deferReply();
+
     const ranking = Object.values(stats)
       .sort((a, b) => b.lucky - a.lucky)
       .filter(u => u.lucky > 0)
@@ -461,9 +482,20 @@ client.on('interactionCreate', async interaction => {
 
     let text = `累計 **${total}**回 和紙が応じてあげたのだ\n\n`;
 
-    ranking.forEach((u, i) => {
-      text += `**${medals[i]} 第${i + 1}位：${u.lucky}回**\n${u.name}\n\n`;
-    });
+    // サーバー内の表示名をリアルタイム取得するループ
+    for (let i = 0; i < ranking.length; i++) {
+      const u = ranking[i];
+      let displayName = u.name; // 初期値はDB保存名
+
+      try {
+        const member = await interaction.guild.members.fetch(u.id);
+        if (member) displayName = member.displayName; // 現在のサーバーでの名前に上書き
+      } catch (err) {
+        // ユーザーが脱退している場合などはそのまま
+      }
+
+      text += `**${medals[i]} 第${i + 1}位：${u.lucky}回**\n${displayName}\n\n`;
+    }
 
     const embed = new EmbedBuilder()
       .setColor(0x8B5A2B)
@@ -472,7 +504,7 @@ client.on('interactionCreate', async interaction => {
       .setDescription(text)
       .setFooter({ text: "…日頃の行いが足りないのだ" });
 
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({ embeds: [embed] });
   }
 });
 
