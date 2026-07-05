@@ -212,18 +212,29 @@ client.on('messageCreate', async message => {
     message.reply(reply);
   }
 
-  if (message.content.includes('<@1507363518830346371>')) {
+    // 和紙メンション処理
+  if (message.content.includes('<@1507363518830346371>') || 
+      message.mentions.has(client.user)) {
+
     const id = message.author.id;
     const username = message.author.username;
     let isLucky = false;
 
+    // メイン返信（必ず送る）
+    const mainReply = replies[Math.floor(Math.random() * replies.length)];
+    message.channel.send(mainReply);
+
+    // Lucky抽選（1%）
     if (Math.random() < 0.01) {
       isLucky = true;
-      const reply = replies[Math.floor(Math.random() * replies.length)];
-      message.channel.send(reply);
+      const luckyReply = replies[Math.floor(Math.random() * replies.length)];
+      message.channel.send(luckyReply);   // Lucky時にもう1個
     }
 
     await updateUserStats(id, username, isLucky);
+
+    // デバッグログ
+    console.log(`✅ 和紙メンション: ${username} (Lucky: ${isLucky})`);
   }
 
   if (message.content.includes('のだ')) {
