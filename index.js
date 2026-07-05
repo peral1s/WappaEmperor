@@ -355,7 +355,7 @@ client.on('messageCreate', async message => {
     message.channel.send('彼女を検出！！！！！！\n嫉嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
   }
 
-  if (message.content.includes('IIドアイ')) {
+  if (message.content.includes('Ⅱドアイ')) {
     message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1512178975886020710/quote_1503055273198354665.png?ex=6a2325ea&is=6a21d46a&hm=436269d39b10d87e66e299c4991816f7263fa0a450656d1271fcab11163fd1e0&');
   }
 
