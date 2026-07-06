@@ -284,6 +284,10 @@ client.on('messageCreate', async message => {
     message.channel.send('よしかるを検出‼️');
   }
 
+  if (message.content.includes('/はっぴぃ')) {
+    message.channel.send('ﾄﾞﾗｺﾞｫﾝｯwﾎﾞｫｫﾙwｵﾚﾊﾀｲﾖｳw\nﾄﾞﾗｺﾞｫﾝｯwﾎﾞｫｫﾙwｵﾏｴﾊﾂｷw\nﾄｹｱｴﾊﾞｧwｷｨｾｪｷｨﾉｫﾊﾟﾜｧｧｧw\nｻｲｷｮｫﾉwﾌｭｰｼﾞｮﾝｯｯｯｯw');
+  }
+
   if (message.content.includes('/レモブル')) {
     message.channel.send('6号を検出‼️');
   }
