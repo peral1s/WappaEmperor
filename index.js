@@ -223,20 +223,22 @@ client.on('messageCreate', async message => {
     console.log(`🎉 全体LUCKY発動・記録: ${username}`);
   }
 
-  // ==========================================
-  // 和紙メンション処理
-  // ==========================================
-  if (message.content.includes('<@1507363518830346371>') || 
-      message.mentions.has(client.user)) {
+// ==========================================
+// 和紙メンション処理
+// ==========================================
+if (
+  !message.reference &&
+  message.mentions.users.has(client.user.id)
+) {
 
-    const mainReply = replies[Math.floor(Math.random() * replies.length)];
-    await message.channel.send(mainReply);
+  const mainReply = replies[Math.floor(Math.random() * replies.length)];
+  await message.channel.send(mainReply);
 
-    await updateUserStats(id, username, 'mention');
+  await updateUserStats(id, username, 'mention');
 
-    console.log(`✅ 和紙メンション: ${username}`);
-  }
-
+  console.log(`✅ 和紙メンション: ${username}`);
+}
+  
   // ==========================================
   // キーワード判定
   // ==========================================
