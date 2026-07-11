@@ -100,7 +100,7 @@ const replies = [
   '朝の光の中でッｪｪｪ♪ah✨\n朝の光の中でッｪｪｪ♪ah✨ah✨ahahah✨\n光にAhhhhhhhhhhhhhh✨☀️',
   '# えっちだフォー！',
   'ケツから穿血\n穿ケツ',
-  '収録10時からで今の午前寝落ち',
+  '収録10時からで今の今まで寝落ち(4時)',
   '毛根はもう来んで',
   '毛根、もうこんだけしかないんか…',
   '水酸化物イオンの覚え方\n『おぉえっちじゃない…🙃』',
@@ -256,19 +256,39 @@ if (
     message.channel.send('ずんだもんみたいな語尾やめるのだ');
   }
 
-  if (message.content.includes('トマトの偉大さ1')) {
-    message.channel.send('トマトって偉大だよね。あのフォルムとか。話すことが多いからなにを話すか悩むな。じゃあとりあe');
+  if (content.includes('/あお')) {
+    const TomatoReplies = [
+      'https://cdn.discordapp.com/attachments/1193815699630592160/1512178331473154298/IMG_2862.jpg?ex=6a232551&is=6a21d3d1&hm=d0d855c65ed1572f3dc6dd6acb9072610aab66631e6f845ed4a6dd64a68d3ee2&',
+      '俺のエクスカリバーをみんなにぶっ刺すのが俺の使命',
+      '汚い結晶を見た時の反応\nえ、キショーwww',
+      '甘味、苦味、酸味、塩味、旨味、女神ってかwwww',
+      'ちな臭素はBr-やからうんこと掛けてブリーwwwwで覚えれる',
+      '毛根、もうこんだけしかないんか…',
+      'ケツから穿血\n穿ケツ',
+      '収録10時からで今の今まで寝落ち(4時)',
+      '俺はゲイやぞ',
+      'んにぃィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィィ',
+      'https://cdn.discordapp.com/attachments/1502569232574058637/1505454058033643590/quote_1500913065317761116.png?ex=6a13e959&is=6a1297d9&hm=02ee75162ec27416338b5b76cf3953297cfbc1c9c3323ca122c3e6f68eec3a33&',
+      '膝ニーは訳したらニーニーになるんかwww',
+      '今朝固めてwwwちょwwwおまwww朝勃ちやんけwww',
+      '男というのはエロを求めた時、動体視力、精密動作性、その他なんか凄そうなやつを普段の250%の力で出せるようになるんやで',
+      '素質がないんだにょwww',
+      `🍅(* ॑꒳ ॑*  )🍅ﾄﾏﾄﾊﾟﾗﾀﾞｲｽ「🍅ﾄｫ↓ﾒｪｲ↓ﾄｫ↑🍅(๑>∀<๑)」
+🍅( '-' 🍅 )ﾄﾒｲﾄｩ（っ’-‘)╮ =͟͟͞͞🍅🍅🍅🍅🍅🍅🍅🍅(っ'-' )╮   =͟͟͞͞🍅ヽ( '-'ヽ)
+🍅🍅🍅Ψ( 'ω'* )ﾄﾒｨﾄｩｽ
+( ╮^o^)╮-｡･*･:≡🍅🍅🍅
+(∩^o^)⊃━━━━━☆🍅.*･｡
+とまとｫ(｢🍅･ω･)｢🍅
+(つ🍅'▽')つ🍅
+( ╮^o^)╮-｡･*･:≡🍅🍅🍅
+🍅( ᐛ   )🍅ﾄﾏﾄﾊﾟｧｧｧｧｧｧｧｧｧｧｧｧｧｧｧｧｧｧｧｧﾗﾀﾞｲｽｩｩｩｩｩｩｩ`,
+'もうなんでもいいので印象教えてください。(便乗蟋蟀)',
+'https://cdn.discordapp.com/attachments/1502569232574058637/1506275221743730708/quote_1506271562817343629.png?ex=6a139a5e&is=6a1248de&hm=1c7b801d6573de0bcf727b1f0b5ce141229d4060a76fa53d91a6ce4999feb4ae&'
+    ];
+    const reply = TomatoReplies[Math.floor(Math.random() * TomatoReplies.length)];
+    message.channel.send(reply);
   }
-
-  if (message.content.includes('トマトの偉大さ2')) {
-    message.channel.send('前回は字数制限でトマトの偉大さを語ることが阻止されたから今回は是非とも聞いてほしいな。初回だからとりa');
-  }
-
-  if (message.content.includes('トマトの偉大さ3')) {
-    message.channel.send('字数少なすぎだろ！今回はちゃんと喋るからな！時間がないから簡潔にまとめるぞ！まずひとt');
-  }
-
-  if (message.content.includes('トマトの偉大さ4')) {
+  if (message.content.includes('トマトの偉大さ')) {
     message.channel.send('そんなものないよおおおんwwwww');
   }
 
@@ -312,8 +332,37 @@ if (
     message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1505454038391722055/quote_1505419785767485480.png?ex=6a13e954&is=6a1297d4&hm=4e2c37e9d6f8674c1f7cb5835d35f9e993b21194ecfd42461c226ffb4bf2fe50&');
   }
 
-  if (content.includes('flatbread')) {
-    message.channel.send('Flatbald wwwwwwwwwww');
+if (content.includes('/flatbread')) {
+    const HnnskReplies = [
+      '# そして輝く✨ウルトラフォー✨\n# (フォー‼️)',
+      `＃今日のクソ知識
+魔法少女まどか★マギカでイベントがあると災害が起こって
+しまう
+・まどマギ第10話放送後→東日本大震災発生
+・完結編→熊本地震
+・叛逆の物語の時→台風＋地震＋津波注意報
+・再放送の時→震度6地震
+まどマギ見てないけど（）`,
+      `こっち見んな（嘘です）
+だいぶ前にもノート貼ったけど環境によって絵柄左右される
+クソです。神絵師多すぎふざけるなア！（夜神）
+まぁ粉バナナ★と言うことでグルメスパイザーしていきまし
+ようか（？）
+好き　管理人全員（元も含めて）
+　　　絵描き
+　　　handball..（イキり滑舌）
+嫌い　色々しつこい奴、荒らし、めんどくさいこと（荒らしに関してはお前なんか嫌いだ！！って言う前に消えてっけ
+ど）
+・ゲーム下手、絵下手、トークカ社不。
+（何だこのステータスLP3000→LPO）
+・ネタバレ殺す。
+・セネガル人なんで日本語なんか知らん
+・しばくぞ
+圧倒的存在感の極太麺を啜る〜！！〇すぞ〜！！！`,
+      'flatbald wwwwww'
+    ];
+    const reply = HnnskReplies[Math.floor(Math.random() * HnnskReplies.length)];
+    message.channel.send(reply);
   }
 
   if (content.includes('/あお')) {
