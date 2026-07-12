@@ -351,6 +351,7 @@ if (content.includes('/flatbread')) {
 
   if (content.includes('/あお')) {
     const AoReplies = [
+      'https://cdn.discordapp.com/attachments/1510191966942531746/1525782900627472384/IMG_4204.png?ex=6a54a38f&is=6a53520f&hm=7151eed0030aecaf44462453138fa115bfe911cdc9be85980e08fa6c075326eb&',
       '怒ったかんな？許さないかんな？\n# 瀬戸環奈',
       'なんか給食のシチューに米じゃなくてパン出てる時くらいモヤモヤした',
       '俺が友達(男子)に告白しようとしてたのに観覧車に無理やり入ってきて奪われた',
