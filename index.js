@@ -349,6 +349,35 @@ if (content.includes('/flatbread')) {
     message.channel.send(reply);
   }
 
+    if (content.includes('ギャルトマト列伝')) {
+    const AoReplies = [
+      `第一話 悪癖
+・私、彼氏いるので。
+・やめてください！警察呼びますよ！`,
+      `第二話 狡猾
+・そんなつもりじゃ…ごめんなさい…
+・え…お詫び…？それぐらいなら…`,
+      `第三話 撮影
+・やめて！そんなこと許してない！もう終わりでしょ！
+・いやあああああ！`,
+      `第四話 脅迫
+・卑怯…！私を脅すつもり…？
+・ジェヨンくん、私負けないからね…！`,
+      `第五話 間隙
+・ジェヨンくん…こんなだったっけ…
+・今日から私は自由だから！！`,
+      `第六話 困惑
+・ジェヨンくん…私…もう…
+・私、なんであいつのとこ行ってるんだろ…`,
+      `最終話 感激
+・これが本当の愛だったんだ…♡
+・ジェヨンく〜ん😄みってる〜❓`
+      
+    ];
+    const reply = AoReplies[Math.floor(Math.random() * AoReplies.length)];
+    message.channel.send(reply);
+  }
+
   if (content.includes('/あお')) {
     const AoReplies = [
       'https://cdn.discordapp.com/attachments/1510191966942531746/1525782900627472384/IMG_4204.png?ex=6a54a38f&is=6a53520f&hm=7151eed0030aecaf44462453138fa115bfe911cdc9be85980e08fa6c075326eb&',
