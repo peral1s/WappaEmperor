@@ -350,7 +350,44 @@ if (content.includes('/flatbread')) {
   }
 
     if (content.includes('ギャルトマト列伝')) {
-    const AoReplies = [
+      
+      if (Math.random() < 0.01) {
+
+    return message.channel.send(`真・最終話 童帝
+???「童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい」
+
+全てを失ったジェヨンの元に、どこからともなく、一人の老人がジェヨンの前へ静かに降り立った。
+
+???「…もう一度、やり直す覚悟は…お有りかしら？」
+
+ジェヨンは目を見開く。
+
+「あ、貴方は…」
+
+老人は穏やかに微笑み、こう言った。
+
+「和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ」
+
+そう言うと、老人は指を一度だけ鳴らした。
+
+次の瞬間、世界がきしむような音を立て、時間そのものが逆行を始める。
+
+???「あ、和紙はレズもせーへきにはなりません」
+
+そんなことを話している間に時間逆行は完了し
+気がつくと俺は、トマトと幸せに暮らしていたあの頃へ戻っていた。
+
+???「他者への幸福を邪魔する様な気持ちも捨てれる事こそが童帝の第一歩なのです」
+
+そして少しだけ表情を険しくし、静かに続けた。
+
+「……その幸せを邪魔するような不届き者は――」
+
+老人は再び指を鳴らし、不敵に笑う。
+
+???「…和紙が犯す」`);
+}
+    const GyarutomatoReplies = [
       `第一話 悪癖
 ・私、彼氏いるので。
 ・やめてください！警察呼びますよ！`,
@@ -374,7 +411,7 @@ if (content.includes('/flatbread')) {
 ・ジェヨンく〜ん😄みってる〜❓`
       
     ];
-    const reply = AoReplies[Math.floor(Math.random() * AoReplies.length)];
+    const reply = GyarutomatoReplies[Math.floor(Math.random() * GyarutomatoReplies.length)];
     message.channel.send(reply);
   }
 
