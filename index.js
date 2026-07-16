@@ -353,7 +353,7 @@ if (content.includes('/flatbread')) {
       
       if (Math.random() < 0.01) {
 
-    return message.channel.send(`真・最終話 童帝
+    const sent = await message.channel.send(`真・最終話 童帝
 ???「童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい」
 
 全てを失ったジェヨンの元に、どこからともなく、一人の老人がジェヨンの前へ静かに降り立った。
@@ -386,6 +386,14 @@ if (content.includes('/flatbread')) {
 老人は再び指を鳴らし、不敵に笑う。
 
 ???「…和紙が犯す」`);
+
+        setTimeout(() => {
+
+    sent.delete().catch(() => {});
+
+  }, 30000); // 10000ms = 10秒
+
+      return;
 }
     const GyarutomatoReplies = [
       `第一話 悪癖
