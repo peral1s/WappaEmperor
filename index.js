@@ -412,7 +412,7 @@ if (content.includes('/flatbread')) {
       
     ];
     const reply = GyarutomatoReplies[Math.floor(Math.random() * GyarutomatoReplies.length)];
-    message.channel.send(reply);
+    return message.channel.send(reply);
   }
 
   if (content.includes('/あお')) {
