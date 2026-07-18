@@ -201,9 +201,13 @@ client.once('ready', async () => {
 });
 
 client.on('messageCreate', async message => {
-
   if (message.author.bot) return;
-  if (!message.guild) return; // DM対策
+
+  console.log(
+    `チャンネル:${message.channel.name} ID:${message.channel.id}`
+  );
+
+  if (!message.guild) return;
 
   // 初回送信でロール付与
   if (message.channel.id === '1401415423785832468') {
