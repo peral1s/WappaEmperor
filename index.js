@@ -625,19 +625,19 @@ client.on('interactionCreate', async interaction => {
       targetName = '全体（all）';
     } else if (commandName === 'addwappa') {
       adaReplies.push(newWord);
-      targetName = 'RPG（wappa）';
+      targetName = '和紙（wappa）';
     } else if (commandName === 'addtomato') {
       tomatoReplies.push(newWord);
-      targetName = 'トマト（tomato）';
+      targetName = '的トマト（tomato）';
     } else if (commandName === 'addao') {
       aoReplies.push(newWord);
-      targetName = 'あお黒歴史（ao）';
+      targetName = 'あお（ao）';
     } else if (commandName === 'addcpc') {
       helloReplies.push(newWord);
-      targetName = 'ポテチロボ（cpc）';
+      targetName = 'カートゥーンポテチ（cpc）';
     } else if (commandName === 'addgal_tomato') {
       gyarutomatoReplies.push(newWord);
-      targetName = 'ギャルトマト（gal_tomato）';
+      targetName = 'ギャルトマト列伝（gal_tomato）';
     }
 
     return interaction.reply({ 
