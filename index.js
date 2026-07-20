@@ -234,7 +234,7 @@ const gyarutomatoReplies = [
 ・そんなつもりじゃ…ごめんなさい…
 ・え…お詫び…？それぐらいなら…`,
   `第三話 撮影
-・やめて！そんなこと許してない！もう終わりでしょ！
+・やめて！そんなこと嫌してない！もう終わりでしょ！
 ・いやあああああ！`,
   `第四話 脅迫
 ・卑怯…！私を脅すつもり…？
@@ -316,23 +316,26 @@ client.once('ready', async () => {
       .addUserOption(option =>
         option.setName('user').setDescription('誰の記録を見たいのだ').setRequired(false)
       ),
-    new SlashCommandBuilder()
-      .setName('rank')
-      .setDescription('和紙を呼び出したランキングを見れるのだ'),
-    new SlashCommandBuilder()
-      .setName('luck')
-      .setDescription('和紙が応じたランキングを見れるのだ'),
+    new SlashCommandBuilder().setName('rank').setDescription('和紙を呼び出したランキングを見れるのだ'),
+    new SlashCommandBuilder().setName('luck').setDescription('和紙が応じたランキングを見れるのだ'),
     
     new SlashCommandBuilder().setName('tomato').setDescription('…的トマトの歴史なのだ'),
     new SlashCommandBuilder().setName('kiwi').setDescription('…和紙がきぅいの歌を歌うのだ'),
     new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
     new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史図鑑なのだ'),
     
-    // 【新規追加・差し替えコマンド】
     new SlashCommandBuilder().setName('all').setDescription('…和紙の、歴史…なのだ'),
     new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
     new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
-    new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?')
+    new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
+
+    // 【新規追加】記憶追加用コマンド群
+    new SlashCommandBuilder().setName('addall').setDescription('…all（全体返信）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+    new SlashCommandBuilder().setName('addwappa').setDescription('…wappa（RPG）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+    new SlashCommandBuilder().setName('addtomato').setDescription('…tomatoに新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+    new SlashCommandBuilder().setName('addao').setDescription('…ao（黒歴史）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+    new SlashCommandBuilder().setName('addcpc').setDescription('…cpc（ポテチロボ）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+    new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true))
   ].map(cmd => cmd.toJSON());
 
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
@@ -584,7 +587,7 @@ client.on('interactionCreate', async interaction => {
   if (commandName === 'gal_tomato') {
     // 1%の確率で発動する隠し演出
     if (Math.random() < 0.01) {
-      await interaction.reply({ content: `真・最終話 童帝\n???「童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい」\n\n全てを失ったジェヨンの元に、どこからともなく、一人の老人がジェヨンの前へ静かに降り立った。\n\n???「…もう一度、やり直す覚悟は…お有りかしら？」\n\nジェヨンは目を見開く。\n\n「あ、貴方は…」\n\n老人は穏やかに微笑み、こう言った。\n\n「和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ」\n\nそう言うと、老人は指を一度だけ鳴らした。\n\n次の瞬間、世界がきしむような音を立て、時間そのものが逆行を始める。\n\n???「あ、和紙はレズもせーへきにはなりません」\n\nそんなことを話している間に時間逆行は完了し\n気がつくと俺は、トマトと幸せに暮らしていたあの頃へ戻っていた。\n\n???「他者への幸福を邪魔する様な気持ちも捨てれる事こそが童帝の第一歩なのです」\n\nそして少しだけ表情を険しくし、静かに続けた。\n\n「……その幸せを邪魔するような不届き者は――」\n\n老人は再び指を鳴らし、不敵に笑う。\n\n???「…和紙が犯す` });
+      await interaction.reply({ content: `真・最終話 童帝\n???「童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい」\n\n全てを失ったジェヨンの元に、どこからともなく、一人の老人がジェヨンの前へ静かに降り立った。\n\n???「…もう一度、やり直す覚悟は…お有りかしら？」\n\nジェヨンは目を見開く。\n\n「あ、貴方は…」\n\n老人は穏やかに微笑み、こう言った。\n\n「和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ」\n\nそう言うと、老人は指を一度だけ鳴らした。\n\n次の瞬間、世界がきしむような音を立て、時間そのものが逆行を始める。\n\n???「あ、和紙はレズもせーへきにはなりません」\n\nそんなことを話している間に時間逆行は完了し\n気がつくと俺は、トマトと幸せに暮らしていたあの頃へ戻っていた。\n\n???「他者への幸福を邪魔する様な気持ちも捨てれる事こそが童帝の第一歩なのです」\n\n慢して少しだけ表情を険しくし、静かに続けた。\n\n「……その幸せを邪魔するような不届き者は――」\n\n老人は再び指を鳴らし、不敵に笑う。\n\n???「…和紙が犯す` });
 
       // 30秒後にメッセージを自動削除
       setTimeout(() => {
@@ -595,6 +598,51 @@ client.on('interactionCreate', async interaction => {
 
     const reply = gyarutomatoReplies[Math.floor(Math.random() * gyarutomatoReplies.length)];
     return interaction.reply({ content: reply });
+  }
+
+  // ==========================================
+  // 【新規追加】記憶追加用コマンドの一括処理（ID制限付き）
+  // ==========================================
+  const addCommands = ['addall', 'addwappa', 'addtomato', 'addao', 'addcpc', 'addgal_tomato'];
+
+  if (addCommands.includes(commandName)) {
+    // 🔒 あなたのユーザーIDのみ実行を許可
+    const allowedUsers = ['768022305279574067'];
+
+    if (!allowedUsers.includes(interaction.user.id)) {
+      return interaction.reply({ 
+        content: '…貴方に和紙の記憶を弄る素質がないんだにょwww 出直してくるのだ', 
+        ephemeral: true 
+      });
+    }
+
+    const newWord = interaction.options.getString('word');
+    let targetName = '';
+
+    // コマンド名に応じて対応する配列に push する
+    if (commandName === 'addall') {
+      replies.push(newWord);
+      targetName = '全体（all）';
+    } else if (commandName === 'addwappa') {
+      adaReplies.push(newWord);
+      targetName = 'RPG（wappa）';
+    } else if (commandName === 'addtomato') {
+      tomatoReplies.push(newWord);
+      targetName = 'トマト（tomato）';
+    } else if (commandName === 'addao') {
+      aoReplies.push(newWord);
+      targetName = 'あお黒歴史（ao）';
+    } else if (commandName === 'addcpc') {
+      helloReplies.push(newWord);
+      targetName = 'ポテチロボ（cpc）';
+    } else if (commandName === 'addgal_tomato') {
+      gyarutomatoReplies.push(newWord);
+      targetName = 'ギャルトマト（gal_tomato）';
+    }
+
+    return interaction.reply({ 
+      content: `…「${newWord}」を和紙の【${targetName}】の記憶に刻んだのだ。次から喋るかもしれないのだ` 
+    });
   }
 });
 
