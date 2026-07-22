@@ -1,3 +1,6 @@
+// Node.jsのネガティブタイマー警告などを抑制
+process.env.NTF_NO_WARNINGS = '1';
+
 // 音声変換エンジン(FFmpeg)のパスを明示的に設定
 try {
   process.env.FFMPEG_PATH = require('ffmpeg-static');
@@ -10,7 +13,8 @@ const {
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
-  VoiceConnectionStatus
+  VoiceConnectionStatus,
+  StreamType
 } = require('@discordjs/voice');
 const play = require('play-dl');
 
@@ -94,7 +98,8 @@ async function playTrack(guildId, messageChannel) {
     const stream = await play.stream(track.url);
 
     const resource = createAudioResource(stream.stream, {
-      inputType: stream.type
+      inputType: stream.type,
+      inlineVolume: false
     });
 
     if (!serverQueue.player) {
