@@ -82,8 +82,10 @@ async function playTrack(guildId, messageChannel) {
       });
 
       serverQueue.player.on('error', err => {
-        console.error('再生エラー:', err);
-        messageChannel.send(`…「${serverQueue.currentTrack?.title}」の再生中にエラーが発生したのだ`);
+        console.error('❌ 再生エラー:', err);
+        if (messageChannel) {
+          messageChannel.send(`…「${serverQueue.currentTrack?.title}」の再生中にエラーが発生したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
+        }
         playTrack(guildId, messageChannel);
       });
 
@@ -93,8 +95,10 @@ async function playTrack(guildId, messageChannel) {
     serverQueue.player.play(resource);
     messageChannel.send(`🎶 **再生中:** ${track.title}\n${track.url}`);
   } catch (err) {
-    console.error('ストリームエラー:', err);
-    messageChannel.send(`…「${track.title}」の読み込みに失敗したのだ`);
+    console.error('❌ ストリームエラー:', err);
+    if (messageChannel) {
+      messageChannel.send(`…「${track.title}」の読み込みに失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
+    }
     playTrack(guildId, messageChannel);
   }
 }
@@ -140,7 +144,8 @@ async function handleMusicCommands(message) {
         }
         return;
       } catch (err) {
-        return message.reply('…プレイリストの読み込みに失敗したのだ');
+        console.error('❌ プレイリスト取得エラー:', err);
+        return message.reply(`…プレイリストの読み込みに失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
       }
     }
 
@@ -163,7 +168,8 @@ async function handleMusicCommands(message) {
         }
         return;
       } catch (err) {
-        return message.reply('…動画情報の取得に失敗したのだ');
+        console.error('❌ 動画情報取得エラー:', err);
+        return message.reply(`…動画情報の取得に失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
       }
     }
 
