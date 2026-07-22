@@ -1,8 +1,17 @@
+// 🔊 音声変換エンジン(FFmpeg)のパスを明示的に設定（無音化防止）
+try {
+  process.env.FFMPEG_PATH = require('ffmpeg-static');
+} catch (e) {
+  console.warn('FFmpegの読み込み警告:', e.message);
+}
+
 const {
   joinVoiceChannel,
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
+  entersState,
+  VoiceConnectionStatus
 } = require('@discordjs/voice');
 const play = require('play-dl');
 
@@ -19,7 +28,7 @@ if (process.env.YOUTUBE_COOKIE) {
   }
 }
 
-// ☁️ SoundCloud Client ID の自動初期化 (client_id エラー回避)
+// ☁️ SoundCloud Client ID の自動初期化
 play.getFreeClientID().then((clientID) => {
   play.setToken({
     soundcloud: {
@@ -56,20 +65,17 @@ async function playTrack(guildId, messageChannel) {
   // ループ設定と曲の進行制御
   if (!serverQueue.isSkippingBack) {
     if (serverQueue.loopMode === 'song' && serverQueue.currentTrack) {
-      // 1曲ループ：現在の曲を維持
+      // 1曲ループ
     } else {
       if (serverQueue.currentTrack && serverQueue.loopMode === 'queue') {
-        // 全曲ループ：終わった曲をキューの最後尾に追加
         serverQueue.queue.push(serverQueue.currentTrack);
       } else if (serverQueue.currentTrack) {
-        // 通常：履歴へ保存
         serverQueue.history.push(serverQueue.currentTrack);
       }
 
       if (serverQueue.queue.length > 0) {
         serverQueue.currentTrack = serverQueue.queue.shift();
       } else {
-        // キューが空になったら退出せず接続維持
         serverQueue.currentTrack = null;
         if (messageChannel) {
           messageChannel.send('…キューの曲がすべて終わったのだ。早く次の曲を入れなさい');
@@ -81,14 +87,20 @@ async function playTrack(guildId, messageChannel) {
     serverQueue.isSkippingBack = false;
   }
 
-  // キューが完全に空の状態で呼び出された場合のガード
-  if (!serverQueue.currentTrack) {
-    return;
-  }
+  if (!serverQueue.currentTrack) return;
 
   const track = serverQueue.currentTrack;
 
   try {
+    // 接続状態の確認（Readyになるまで待機）
+    if (serverQueue.connection) {
+      try {
+        await entersState(serverQueue.connection, VoiceConnectionStatus.Ready, 10_000);
+      } catch (e) {
+        console.error('VC接続タイムアウト:', e);
+      }
+    }
+
     // 各サイトの音声ストリームを取得
     const stream = await play.stream(track.url);
 
@@ -139,12 +151,12 @@ async function handleMusicCommands(message) {
 
     const serverQueue = getGuildQueue(guildId);
 
-    // VC未接続の場合のみ接続処理を実行
     if (!serverQueue.connection) {
       serverQueue.connection = joinVoiceChannel({
         channelId: voiceChannel.id,
         guildId: guildId,
         adapterCreator: message.guild.voiceAdapterCreator,
+        selfDeaf: true
       });
     }
 
@@ -215,7 +227,6 @@ async function handleMusicCommands(message) {
             }
           }
         } else {
-          // 曲名指定の場合
           const searched = await play.search(query, {
             limit: 1,
             source: { soundcloud: 'tracks' }
@@ -270,7 +281,7 @@ async function handleMusicCommands(message) {
     return;
   }
 
-  // ⏭️ w!st <番号> (指定位置までスキップ)
+  // ⏭️ w!st <番号>
   if (content.startsWith('w!st ')) {
     const num = parseInt(content.slice(5).trim());
     if (isNaN(num) || num < 1 || num > serverQueue.queue.length) {
@@ -287,7 +298,7 @@ async function handleMusicCommands(message) {
     return;
   }
 
-  // ⏮️ w!back (前の曲に戻る)
+  // ⏮️ w!back
   if (content === 'w!back') {
     if (serverQueue.history.length === 0) return message.reply('…前の曲の履歴がないのだ');
 
@@ -303,13 +314,13 @@ async function handleMusicCommands(message) {
     return;
   }
 
-  // 🎧 w!now (再生中の曲表示)
+  // 🎧 w!now
   if (content === 'w!now') {
     if (!serverQueue.currentTrack) return message.reply('…現在再生中の曲はないのだ');
     return message.reply(`🎵 **現在再生中:** ${serverQueue.currentTrack.title}\n🔗 ${serverQueue.currentTrack.url}`);
   }
 
-  // 📜 w!q (キュー表示)
+  // 📜 w!q
   if (content === 'w!q') {
     if (!serverQueue.currentTrack && serverQueue.queue.length === 0) {
       return message.reply('…キューは空っぽなのだ');
@@ -346,19 +357,19 @@ async function handleMusicCommands(message) {
     }
   }
 
-  // 🔁 w!loop (1曲ループ)
+  // 🔁 w!loop
   if (content === 'w!loop') {
     serverQueue.loopMode = serverQueue.loopMode === 'song' ? 'off' : 'song';
     return message.reply(`…ループ再生を **${serverQueue.loopMode === 'song' ? '有効' : '無効'}** にしたのだ`);
   }
 
-  // 🔂 w!rq (全曲ループ)
+  // 🔂 w!rq
   if (content === 'w!rq') {
     serverQueue.loopMode = serverQueue.loopMode === 'queue' ? 'off' : 'queue';
     return message.reply(`…リピートキューを **${serverQueue.loopMode === 'queue' ? '有効' : '無効'}** にしたのだ`);
   }
 
-  // 🚪 w!dc (手動退出)
+  // 🚪 w!dc
   if (content === 'w!dc') {
     serverQueue.connection.destroy();
     guildQueues.delete(guildId);
