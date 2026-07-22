@@ -1,7 +1,7 @@
 {
   "name": "wappa-emperor",
   "version": "1.0.0",
-  "description": "Wappa Emperor",
+  "description": "wappa-emperor",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -9,6 +9,8 @@
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
     "discord.js": "^14.18.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "libsodium-wrappers": "^0.7.15",
     "mongodb": "^6.8.0",
     "play-dl": "^1.9.7"
