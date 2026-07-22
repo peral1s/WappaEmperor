@@ -10,7 +10,6 @@ const {
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
-  entersState,
   VoiceConnectionStatus
 } = require('@discordjs/voice');
 const play = require('play-dl');
@@ -151,15 +150,21 @@ async function handleMusicCommands(message) {
           selfDeaf: true
         });
 
-        // 接続が確立（Ready）になるまで待機
-        await entersState(serverQueue.connection, VoiceConnectionStatus.Ready, 20_000);
+        // 切断検知時の処理
+        serverQueue.connection.on(VoiceConnectionStatus.Disconnected, () => {
+          try {
+            serverQueue.connection.destroy();
+          } catch (e) {}
+          guildQueues.delete(guildId);
+        });
+
       } catch (connErr) {
         console.error('VC接続失敗:', connErr);
         if (serverQueue.connection) {
           serverQueue.connection.destroy();
           serverQueue.connection = null;
         }
-        return message.reply('…ボイスチャンネルへの接続に失敗したのだ（タイムアウト）');
+        return message.reply('…ボイスチャンネルへの接続に失敗したのだ');
       }
     }
 
