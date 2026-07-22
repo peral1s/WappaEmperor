@@ -236,7 +236,7 @@ async function handleMusicCommands(message) {
     let qText = `**🎶 現在再生中:** ${serverQueue.currentTrack ? serverQueue.currentTrack.title : 'なし'}\n\n**📜 キュー一覧:**\n`;
 
     if (serverQueue.queue.length === 0) {
-      qText += '（…次に再生される曲は有りません）';
+      qText += '（…次に再生される曲が有りません）';
     } else {
       serverQueue.queue.slice(0, 10).forEach((t, i) => {
         qText += `**${i + 1}.** ${t.title} (追加: ${t.requestedBy})\n`;
@@ -246,7 +246,7 @@ async function handleMusicCommands(message) {
       }
     }
 
-    qText += `\n\n🔁 モード: **${serverQueue.loopMode === 'song' ? 'ループ再生' : serverQueue.loopMode === 'queue' ? '全曲リピート' : '通常'}**`;
+    qText += `\n\nモード: **${serverQueue.loopMode === 'song' ? 'ループ再生' : serverQueue.loopMode === 'queue' ? '全曲リピート' : '通常'}**`;
 
     return message.reply(qText);
   }
@@ -280,7 +280,7 @@ async function handleMusicCommands(message) {
   if (content === 'w!dc') {
     serverQueue.connection.destroy();
     guildQueues.delete(guildId);
-    return message.reply('👋 ボイスチャンネルから退出したのだ！');
+    return message.reply('…ボイスチャンネルから退出したのだ');
   }
 }
 
