@@ -3,22 +3,8 @@ const {
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
-  StreamType
 } = require('@discordjs/voice');
-const ytdl = require('@distube/ytdl-core');
-const ytpl = require('ytpl');
-
-// 🍪 YouTube Cookie の読み込み処理 (Bot判定・Sign in エラー回避用)
-let ytdlAgent;
-if (process.env.YOUTUBE_COOKIES) {
-  try {
-    const cookies = JSON.parse(process.env.YOUTUBE_COOKIES);
-    ytdlAgent = ytdl.createAgent(cookies);
-    console.log('YouTube Cookie を正常に読み込みました';
-  } catch (err) {
-    console.error('Cookie のパースに失敗しました:', err);
-  }
-}
+const play = require('play-dl');
 
 // サーバー（Guild）ごとの音楽キューと再生状態を保存
 const guildQueues = new Map();
@@ -78,14 +64,12 @@ async function playTrack(guildId, messageChannel) {
   const track = serverQueue.currentTrack;
 
   try {
-    const stream = ytdl(track.url, {
-      agent: ytdlAgent, // Cookie Agentを設定
-      filter: 'audioonly',
-      highWaterMark: 1 << 25,
-      quality: 'highestaudio'
-    });
+    // 各サイトの音声ストリームを取得
+    const stream = await play.stream(track.url);
 
-    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+    const resource = createAudioResource(stream.stream, {
+      inputType: stream.type
+    });
 
     if (!serverQueue.player) {
       serverQueue.player = createAudioPlayer();
@@ -122,11 +106,11 @@ async function handleMusicCommands(message) {
   const guildId = message.guild.id;
   const voiceChannel = message.member?.voice?.channel;
 
-  // 🎵 w!p <URL> (再生・プレイリスト追加)
+  // 🎵 w!p <URL または 検索キーワード>
   if (content.startsWith('w!p ')) {
     const query = content.slice(4).trim();
     if (!voiceChannel) return message.reply('…まず貴方がボイスチャンネルに入るのだ');
-    if (!query) return message.reply('…URLを指定するのだ');
+    if (!query) return message.reply('…URLまたは曲名を指定するのだ');
 
     const serverQueue = getGuildQueue(guildId);
 
@@ -139,54 +123,125 @@ async function handleMusicCommands(message) {
       });
     }
 
-    // プレイリスト判定
-    if (ytpl.validateID(query)) {
-      try {
-        const playlist = await ytpl(query, { limit: 50 });
-        const tracks = playlist.items.map(item => ({
-          title: item.title,
-          url: item.shortUrl,
-          requestedBy: message.author.username
-        }));
+    try {
+      const tracksToAdd = [];
+      const validation = await play.validate(query);
 
-        serverQueue.queue.push(...tracks);
-        message.reply(`…**${playlist.title}** から **${tracks.length}曲** をキューに追加したのだ`);
-
-        if (!serverQueue.currentTrack) {
-          playTrack(guildId, message.channel);
+      // 🟢 Spotify の場合
+      if (validation && validation.startsWith('sp_')) {
+        if (play.is_expired()) {
+          await play.refreshToken();
         }
-        return;
-      } catch (err) {
-        console.error('プレイリスト取得エラー:', err);
-        return message.reply(`…プレイリストの読み込みに失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
+        const spotifyData = await play.spotify(query);
+
+        if (validation === 'sp_track') {
+          // Spotify単曲 -> 音源検索して追加
+          const searched = await play.search(`${spotifyData.name} ${spotifyData.artists[0]?.name || ''}`, {
+            limit: 1,
+            source: { soundcloud: 'tracks' }
+          });
+          if (searched.length > 0) {
+            tracksToAdd.push({
+              title: spotifyData.name,
+              url: searched[0].url,
+              requestedBy: message.author.username
+            });
+          }
+        } else if (validation === 'sp_playlist' || validation === 'sp_album') {
+          // Spotifyプレイリスト/アルバム（最大20曲）
+          const allTracks = await spotifyData.all_tracks();
+          for (const item of allTracks.slice(0, 20)) {
+            const searched = await play.search(`${item.name} ${item.artists[0]?.name || ''}`, {
+              limit: 1,
+              source: { soundcloud: 'tracks' }
+            });
+            if (searched.length > 0) {
+              tracksToAdd.push({
+                title: item.name,
+                url: searched[0].url,
+                requestedBy: message.author.username
+              });
+            }
+          }
+        }
       }
-    }
+      // 🟠 SoundCloud の場合
+      else if (validation && validation.startsWith('so_')) {
+        const scData = await play.soundcloud(query);
+        if (validation === 'so_track') {
+          tracksToAdd.push({
+            title: scData.name,
+            url: scData.url,
+            requestedBy: message.author.username
+          });
+        } else if (validation === 'so_playlist') {
+          const scTracks = await scData.all_tracks();
+          scTracks.forEach(t => tracksToAdd.push({
+            title: t.name,
+            url: t.url,
+            requestedBy: message.author.username
+          }));
+        }
+      }
+      // 🟡 その他（YouTubeリンクやキーワード検索）
+      else {
+        if (validation === 'yt_video') {
+          const info = await play.video_info(query);
+          tracksToAdd.push({
+            title: info.video_details.title,
+            url: info.video_details.url,
+            requestedBy: message.author.username
+          });
+        } else if (validation === 'yt_playlist') {
+          const playlist = await play.playlist_info(query);
+          const videos = await playlist.all_videos();
+          videos.forEach(v => tracksToAdd.push({
+            title: v.title,
+            url: v.url,
+            requestedBy: message.author.username
+          }));
+        } else {
+          // URLではない場合はキーワードで曲検索
+          const searched = await play.search(query, {
+            limit: 1,
+            source: { soundcloud: 'tracks' }
+          });
+          if (searched.length > 0) {
+            tracksToAdd.push({
+              title: searched[0].name,
+              url: searched[0].url,
+              requestedBy: message.author.username
+            });
+          } else {
+            return message.reply('…曲が見つからなかったのだ');
+          }
+        }
+      }
 
-    // 単体動画判定
-    if (ytdl.validateURL(query)) {
-      try {
-        const info = await ytdl.getInfo(query, { agent: ytdlAgent }); // Cookie Agentを設定
-        const track = {
-          title: info.videoDetails.title,
-          url: info.videoDetails.video_url,
-          requestedBy: message.author.username
-        };
+      if (tracksToAdd.length === 0) {
+        return message.reply('…曲情報の取得に失敗したのだ');
+      }
 
-        serverQueue.queue.push(track);
+      serverQueue.queue.push(...tracksToAdd);
 
+      if (tracksToAdd.length === 1) {
         if (!serverQueue.currentTrack) {
           playTrack(guildId, message.channel);
         } else {
-          message.reply(`…**${track.title}**をキューに追加したのだ`);
+          message.reply(`…**${tracksToAdd[0].title}**をキューに追加したのだ`);
         }
-        return;
-      } catch (err) {
-        console.error('動画情報取得エラー:', err);
-        return message.reply(`…動画情報の取得に失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
+      } else {
+        message.reply(`…**${tracksToAdd.length}曲**をキューに追加したのだ`);
+        if (!serverQueue.currentTrack) {
+          playTrack(guildId, message.channel);
+        }
       }
-    }
+      return;
 
-    return message.reply('…URLを入力するのだ');
+    } catch (err) {
+      console.error('動画情報取得エラー:', err);
+      return message.reply(`…曲情報の取得に失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
+    }
   }
 
   const serverQueue = getGuildQueue(guildId);
@@ -197,7 +252,7 @@ async function handleMusicCommands(message) {
     if (!serverQueue.currentTrack) return message.reply('…再生中の曲がないのだ');
     message.reply('…スキップしたのだ');
     if (serverQueue.loopMode === 'song') serverQueue.loopMode = 'off';
-    serverQueue.player.stop();
+    serverQueue.player?.stop();
     return;
   }
 
@@ -214,7 +269,7 @@ async function handleMusicCommands(message) {
 
     message.reply(`… ${num} 番目の曲までスキップするのだ`);
     if (serverQueue.loopMode === 'song') serverQueue.loopMode = 'off';
-    serverQueue.player.stop();
+    serverQueue.player?.stop();
     return;
   }
 
@@ -230,7 +285,7 @@ async function handleMusicCommands(message) {
     serverQueue.currentTrack = previousTrack;
     serverQueue.isSkippingBack = true;
     message.reply(`…前の曲に戻るのだ: **${previousTrack.title}**`);
-    serverQueue.player.stop();
+    serverQueue.player?.stop();
     return;
   }
 
