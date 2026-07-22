@@ -267,7 +267,7 @@ async function handleMusicCommands(message) {
   // 🔂 w!rq (全曲ループ)
   if (content === 'w!rq') {
     serverQueue.loopMode = serverQueue.loopMode === 'queue' ? 'off' : 'queue';
-    return message.reply('…リピートキューを **${serverQueue.loopMode === 'queue' ? '有効' : '無効'}** にしたのだ`);
+    return message.reply(`…リピートキューを **${serverQueue.loopMode === 'queue' ? '有効' : '無効'}** にしたのだ`);
   }
 
   // 🚪 w!dc (手動退出)
