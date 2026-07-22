@@ -6,6 +6,31 @@ const {
 } = require('@discordjs/voice');
 const play = require('play-dl');
 
+// 🍪 YouTube Cookie の読み込み設定
+if (process.env.YOUTUBE_COOKIE) {
+  try {
+    play.setToken({
+      youtube: {
+        cookie: process.env.YOUTUBE_COOKIE
+      }
+    });
+  } catch (err) {
+    console.error('Cookie設定エラー:', err);
+  }
+}
+
+// ☁️ SoundCloud Client ID の自動初期化 (client_id エラー回避)
+play.getFreeClientID().then((clientID) => {
+  play.setToken({
+    soundcloud: {
+      client_id: clientID
+    }
+  });
+  console.log('✅ SoundCloud Client ID を自動取得したのだ');
+}).catch((err) => {
+  console.warn('⚠️ SoundCloud Client ID 取得スキップ:', err.message);
+});
+
 // サーバー（Guild）ごとの音楽キューと再生状態を保存
 const guildQueues = new Map();
 
@@ -127,46 +152,8 @@ async function handleMusicCommands(message) {
       const tracksToAdd = [];
       const validation = await play.validate(query);
 
-      // 🟢 Spotify の場合
-      if (validation && validation.startsWith('sp_')) {
-        if (play.is_expired()) {
-          await play.refreshToken();
-        }
-        const spotifyData = await play.spotify(query);
-
-        if (validation === 'sp_track') {
-          // Spotify単曲 -> 音源検索して追加
-          const searched = await play.search(`${spotifyData.name} ${spotifyData.artists[0]?.name || ''}`, {
-            limit: 1,
-            source: { soundcloud: 'tracks' }
-          });
-          if (searched.length > 0) {
-            tracksToAdd.push({
-              title: spotifyData.name,
-              url: searched[0].url,
-              requestedBy: message.author.username
-            });
-          }
-        } else if (validation === 'sp_playlist' || validation === 'sp_album') {
-          // Spotifyプレイリスト/アルバム（最大20曲）
-          const allTracks = await spotifyData.all_tracks();
-          for (const item of allTracks.slice(0, 20)) {
-            const searched = await play.search(`${item.name} ${item.artists[0]?.name || ''}`, {
-              limit: 1,
-              source: { soundcloud: 'tracks' }
-            });
-            if (searched.length > 0) {
-              tracksToAdd.push({
-                title: item.name,
-                url: searched[0].url,
-                requestedBy: message.author.username
-              });
-            }
-          }
-        }
-      }
       // 🟠 SoundCloud の場合
-      else if (validation && validation.startsWith('so_')) {
+      if (validation && validation.startsWith('so_')) {
         const scData = await play.soundcloud(query);
         if (validation === 'so_track') {
           tracksToAdd.push({
@@ -183,25 +170,52 @@ async function handleMusicCommands(message) {
           }));
         }
       }
-      // 🟡 その他（YouTubeリンクやキーワード検索）
+      // 🟢 Spotify の場合
+      else if (validation && validation.startsWith('sp_')) {
+        if (play.is_expired()) {
+          await play.refreshToken();
+        }
+        const spotifyData = await play.spotify(query);
+
+        if (validation === 'sp_track') {
+          const searched = await play.search(`${spotifyData.name} ${spotifyData.artists[0]?.name || ''}`, {
+            limit: 1,
+            source: { soundcloud: 'tracks' }
+          });
+          if (searched.length > 0) {
+            tracksToAdd.push({
+              title: spotifyData.name,
+              url: searched[0].url,
+              requestedBy: message.author.username
+            });
+          }
+        }
+      }
+      // 🟡 YouTube または 検索キーワードの場合
       else {
         if (validation === 'yt_video') {
-          const info = await play.video_info(query);
-          tracksToAdd.push({
-            title: info.video_details.title,
-            url: info.video_details.url,
-            requestedBy: message.author.username
-          });
-        } else if (validation === 'yt_playlist') {
-          const playlist = await play.playlist_info(query);
-          const videos = await playlist.all_videos();
-          videos.forEach(v => tracksToAdd.push({
-            title: v.title,
-            url: v.url,
-            requestedBy: message.author.username
-          }));
+          try {
+            const info = await play.video_info(query);
+            tracksToAdd.push({
+              title: info.video_details.title,
+              url: info.video_details.url,
+              requestedBy: message.author.username
+            });
+          } catch (e) {
+            console.warn('YouTube取得失敗。SoundCloudで代替検索します:', e.message);
+            const searched = await play.search(query, { limit: 1, source: { soundcloud: 'tracks' } });
+            if (searched.length > 0) {
+              tracksToAdd.push({
+                title: searched[0].name,
+                url: searched[0].url,
+                requestedBy: message.author.username
+              });
+            } else {
+              throw e;
+            }
+          }
         } else {
-          // URLではない場合はキーワードで曲検索
+          // 曲名指定の場合
           const searched = await play.search(query, {
             limit: 1,
             source: { soundcloud: 'tracks' }
