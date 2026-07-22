@@ -8,6 +8,18 @@ const {
 const ytdl = require('@distube/ytdl-core');
 const ytpl = require('ytpl');
 
+// 🍪 YouTube Cookie の読み込み処理 (Bot判定・Sign in エラー回避用)
+let ytdlAgent;
+if (process.env.YOUTUBE_COOKIES) {
+  try {
+    const cookies = JSON.parse(process.env.YOUTUBE_COOKIES);
+    ytdlAgent = ytdl.createAgent(cookies);
+    console.log('YouTube Cookie を正常に読み込みました';
+  } catch (err) {
+    console.error('Cookie のパースに失敗しました:', err);
+  }
+}
+
 // サーバー（Guild）ごとの音楽キューと再生状態を保存
 const guildQueues = new Map();
 
@@ -67,6 +79,7 @@ async function playTrack(guildId, messageChannel) {
 
   try {
     const stream = ytdl(track.url, {
+      agent: ytdlAgent, // Cookie Agentを設定
       filter: 'audioonly',
       highWaterMark: 1 << 25,
       quality: 'highestaudio'
@@ -82,7 +95,7 @@ async function playTrack(guildId, messageChannel) {
       });
 
       serverQueue.player.on('error', err => {
-        console.error('❌ 再生エラー:', err);
+        console.error('再生エラー:', err);
         if (messageChannel) {
           messageChannel.send(`…「${serverQueue.currentTrack?.title}」の再生中にエラーが発生したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
         }
@@ -95,7 +108,7 @@ async function playTrack(guildId, messageChannel) {
     serverQueue.player.play(resource);
     messageChannel.send(`🎶 **再生中:** ${track.title}\n${track.url}`);
   } catch (err) {
-    console.error('❌ ストリームエラー:', err);
+    console.error('ストリームエラー:', err);
     if (messageChannel) {
       messageChannel.send(`…「${track.title}」の読み込みに失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
     }
@@ -144,7 +157,7 @@ async function handleMusicCommands(message) {
         }
         return;
       } catch (err) {
-        console.error('❌ プレイリスト取得エラー:', err);
+        console.error('プレイリスト取得エラー:', err);
         return message.reply(`…プレイリストの読み込みに失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
       }
     }
@@ -152,7 +165,7 @@ async function handleMusicCommands(message) {
     // 単体動画判定
     if (ytdl.validateURL(query)) {
       try {
-        const info = await ytdl.getInfo(query);
+        const info = await ytdl.getInfo(query, { agent: ytdlAgent }); // Cookie Agentを設定
         const track = {
           title: info.videoDetails.title,
           url: info.videoDetails.video_url,
@@ -168,7 +181,7 @@ async function handleMusicCommands(message) {
         }
         return;
       } catch (err) {
-        console.error('❌ 動画情報取得エラー:', err);
+        console.error('動画情報取得エラー:', err);
         return message.reply(`…動画情報の取得に失敗したのだ\n\`\`\`\n${err.message || err}\n\`\`\``);
       }
     }
@@ -199,7 +212,7 @@ async function handleMusicCommands(message) {
     if (serverQueue.currentTrack) serverQueue.history.push(serverQueue.currentTrack);
     serverQueue.history.push(...skippedTracks);
 
-    message.reply(`… ${num} 番目の曲までスキップするのだ！`);
+    message.reply(`… ${num} 番目の曲までスキップするのだ`);
     if (serverQueue.loopMode === 'song') serverQueue.loopMode = 'off';
     serverQueue.player.stop();
     return;
@@ -236,7 +249,7 @@ async function handleMusicCommands(message) {
     let qText = `**🎶 現在再生中:** ${serverQueue.currentTrack ? serverQueue.currentTrack.title : 'なし'}\n\n**📜 キュー一覧:**\n`;
 
     if (serverQueue.queue.length === 0) {
-      qText += '（…次に再生される曲が有りません）';
+      qText += '（…次に再生する曲が有りません）';
     } else {
       serverQueue.queue.slice(0, 10).forEach((t, i) => {
         qText += `**${i + 1}.** ${t.title} (追加: ${t.requestedBy})\n`;
@@ -285,4 +298,3 @@ async function handleMusicCommands(message) {
 }
 
 module.exports = { handleMusicCommands };
-
