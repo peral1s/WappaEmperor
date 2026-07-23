@@ -1,4 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { 
+  SlashCommandBuilder, 
+  ApplicationIntegrationType, 
+  InteractionContextType 
+} = require('discord.js');
 
 const commands = [
   new SlashCommandBuilder()
@@ -27,7 +31,24 @@ const commands = [
   new SlashCommandBuilder().setName('addao').setDescription('…ao（黒歴史）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addcpc').setDescription('…cpc（ポテチロボ）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true))
-].map(cmd => cmd.toJSON());
+].map(cmd => {
+  // 💡 DM（Botとの個人チャット、グループDM）やユーザーインストールで全コマンドが呼び出せるよう一括設定
+  if (typeof cmd.setIntegrationTypes === 'function') {
+    cmd.setIntegrationTypes([
+      ApplicationIntegrationType.GuildInstall,
+      ApplicationIntegrationType.UserInstall
+    ]);
+  }
+  if (typeof cmd.setContexts === 'function') {
+    cmd.setContexts([
+      InteractionContextType.Guild,
+      InteractionContextType.BotDM,
+      InteractionContextType.PrivateChannel
+    ]);
+  }
+  cmd.setDMPermission(true);
+
+  return cmd.toJSON();
+});
 
 module.exports = commands;
-
