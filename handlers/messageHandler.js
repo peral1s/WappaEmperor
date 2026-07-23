@@ -1,5 +1,6 @@
 const replyData = require('../data/replies');
 const { updateUserStats } = require('../db/database');
+const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 
 async function handleMessage(message, client) {
   if (message.author.bot) return;
@@ -8,7 +9,44 @@ async function handleMessage(message, client) {
 
   if (!message.guild) return;
 
+  // ==========================================
+  // ボイスチャンネル参加・退出機能
+  // ==========================================
+  if (message.content.toLowerCase() === 'w!join') {
+    const voiceChannel = message.member.voice.channel;
+
+    if (!voiceChannel) {
+      return message.reply('…貴方、ボイスチャンネルに入っていないのだ');
+    }
+
+    try {
+      joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      });
+
+      return message.channel.send(`…**${voiceChannel.name}** に参加したのだ`);
+    } catch (error) {
+      console.error('VC参加エラー:', error);
+      return message.reply('…ボイスチャンネルへの参加に失敗したのだ');
+    }
+  }
+
+  if (message.content.toLowerCase() === 'w!dc') {
+    const connection = getVoiceConnection(message.guild.id);
+
+    if (!connection) {
+      return message.reply('…和紙はどこのボイスチャンネルにも参加していないのだ');
+    }
+
+    connection.destroy();
+    return message.channel.send('…ボイスチャンネルから退出したのだ');
+  }
+
+  // ==========================================
   // 初回送信でロール付与
+  // ==========================================
   if (message.channel.id === '1401415423785832468') {
     const role = message.guild.roles.cache.get('1510205076730548305');
     if (role && !message.member.roles.cache.has(role.id)) {
