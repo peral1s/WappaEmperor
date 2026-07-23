@@ -1,6 +1,5 @@
 const replyData = require('../data/replies');
 const { updateUserStats } = require('../db/database');
-const { handleMusicCommands } = require('../managers/musicManager');
 
 async function handleMessage(message, client) {
   if (message.author.bot) return;
@@ -20,12 +19,6 @@ async function handleMessage(message, client) {
         console.error('ロール付与失敗:', err);
       }
     }
-  }
-
-  // 🎵 音楽コマンド判定 (w! から始まるメッセージ)
-  if (message.content.startsWith('w!')) {
-    await handleMusicCommands(message);
-    return;
   }
 
   const content = message.content.toLowerCase();
@@ -74,7 +67,7 @@ async function handleMessage(message, client) {
   }
 
   if (message.content.includes('彼女')) {
-    message.channel.send('彼女を検出！！！！！！\n嫉嫉嫉モード発動！！！！！\nンニィィィィィィィィィィィィィ');
+    message.channel.send('彼女を検出！！！！！！\n嫉嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
   }
 
   const sexWords = ['セックス', 'サックス', 'シックス', 'ソックス', 'せっくす', 'sax', 'six', 'sex', 'sox', 'せくす', 'セクス', 'せくしー', 'セクシー'];
