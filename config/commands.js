@@ -25,6 +25,26 @@ const commands = [
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
 
+  // 💡 フォーマット選択を追加した harvest コマンド
+  new SlashCommandBuilder()
+    .setName('harvest')
+    .setDescription('…Yougaの発言ログを遡ってテキストファイルで抽出するのだ')
+    .addIntegerOption(opt => 
+      opt.setName('limit')
+         .setDescription('遡る最大メッセージ件数（デフォルト: 1000件 / 最大: 5000件）')
+         .setRequired(false)
+    )
+    .addStringOption(opt =>
+      opt.setName('format')
+         .setDescription('出力フォーマット（指定しない場合は日付付きログ）')
+         .setRequired(false)
+         .addChoices(
+           { name: '発言テキストのみ（切り取り・コピペ用）', value: 'text' },
+           { name: 'JS配列形式（replies.js直貼り用）', value: 'array' },
+           { name: '日付付き詳細ログ', value: 'log' }
+         )
+    ),
+
   new SlashCommandBuilder().setName('addall').setDescription('…all（全体返信）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addwappa').setDescription('…wappa（RPG）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addtomato').setDescription('…tomatoに新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
@@ -32,7 +52,6 @@ const commands = [
   new SlashCommandBuilder().setName('addcpc').setDescription('…cpc（ポテチロボ）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true))
 ].map(cmd => {
-  // 💡 DM（Botとの個人チャット、グループDM）やユーザーインストールで全コマンドが呼び出せるよう一括設定
   if (typeof cmd.setIntegrationTypes === 'function') {
     cmd.setIntegrationTypes([
       ApplicationIntegrationType.GuildInstall,
