@@ -1,8 +1,8 @@
 const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
 const { getAllStats } = require('../db/database');
-const tarotCards = require('../data/tarot');
-const handleHarvest = require('./harvestHandler'); // 💡 追加
+const handleHarvest = require('./harvestHandler');
+const handleTarot = require('./tarotHandler'); // 💡 タロットも外部ハンドラーに統一
 
 async function handleInteraction(interaction, client) {
   if (!interaction.isCommand()) return;
@@ -10,36 +10,17 @@ async function handleInteraction(interaction, client) {
   const stats = await getAllStats();
   const { commandName } = interaction;
 
-  // 💡 harvest コマンドの呼び出し（切り離し対応）
+  // 💡 harvest コマンドの呼び出し
   if (commandName === 'harvest') {
     return handleHarvest(interaction);
   }
 
-  // --- 以下、既存のコマンド群（tarot, log, rank, luck 等） ---
-
-
-  // タロット占い機能
+  // 🔮 tarot コマンドの呼び出し（リアル口調版）
   if (commandName === 'tarot') {
-    const card = tarotCards[Math.floor(Math.random() * tarotCards.length)];
-    const isUpright = Math.random() >= 0.5;
-    const positionText = isUpright ? '【正位置】' : '【逆位置】';
-    const meaning = isUpright ? card.upright : card.reversed;
-
-    const embed = new EmbedBuilder()
-      .setColor(isUpright ? 0x2ECC71 : 0xE74C3C)
-      .setTitle(`🔮 ${interaction.user.username}のタロット占い結果`)
-      .setThumbnail(client.user.displayAvatarURL())
-      .setDescription(
-`引いたカードはこれやな…
-
-### **${card.name}** ${positionText}
-
-> ${meaning}`
-      )
-      .setFooter({ text: '和紙のRPG、興味ある？(定期)' });
-
-    return interaction.reply({ embeds: [embed] });
+    return handleTarot(interaction);
   }
+
+  // --- 以下、既存のコマンド群（log, rank, luck 等） ---
 
   if (commandName === 'log') {
     const target = interaction.options.getUser('user') || interaction.user;
