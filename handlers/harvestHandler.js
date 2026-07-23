@@ -1,11 +1,18 @@
 const { AttachmentBuilder } = require('discord.js');
 
 async function handleHarvest(interaction) {
-  // 💡 実行権限チェック（YougaさんのID）
-  const YOUGA_ID = '1005698535603322881';
-  const allowedUsers = [YOUGA_ID];
+  // ==========================================
+  // ⚙️ ID・権限設定
+  // ==========================================
+  // 1. 実行可能者（あなた専用）
+  const ALLOWED_USER_ID = '768022305279574067';
 
-  if (!allowedUsers.includes(interaction.user.id)) {
+  // 2. デフォルトの抽出対象（和紙）
+  const DEFAULT_TARGET_ID = '1005698535603322881';
+  // ==========================================
+
+  // 実行権限チェック（実行可能者以外は弾く）
+  if (interaction.user.id !== ALLOWED_USER_ID) {
     return interaction.reply({ 
       content: '…貴方に和紙の記憶を収穫（抽出）する素質がないのだ', 
       ephemeral: true 
@@ -14,10 +21,21 @@ async function handleHarvest(interaction) {
 
   await interaction.deferReply({ ephemeral: true });
 
-  // 💡 対象ユーザーの取得（コマンドで指定されていなければYougaさんを対象にする）
-  const targetUser = interaction.options.getUser('user') || await interaction.client.users.fetch(YOUGA_ID);
-  const targetUserId = targetUser.id;
+  // 💡 抽出対象のユーザーを取得（選択されていなければデフォルトで 和紙）
+  const selectedUser = interaction.options.getUser('user');
+  let targetUser;
 
+  if (selectedUser) {
+    targetUser = selectedUser;
+  } else {
+    try {
+      targetUser = await interaction.client.users.fetch(DEFAULT_TARGET_ID);
+    } catch (e) {
+      targetUser = { id: DEFAULT_TARGET_ID, username: '和紙' };
+    }
+  }
+
+  const targetUserId = targetUser.id;
   const scanLimit = Math.min(interaction.options.getInteger('limit') || 1000, 5000);
   const format = interaction.options.getString('format') || 'log';
   const channel = interaction.channel;
@@ -38,7 +56,7 @@ async function handleHarvest(interaction) {
       scannedCount += fetchedMessages.size;
 
       fetchedMessages.forEach(msg => {
-        // Bot以外の発言で、指定ID（1005698535603322881）の発言のみ抽出
+        // Bot以外の発言 ＆ 抽出対象ユーザー（指定なしなら和紙）の発言のみピックアップ
         if (!msg.author.bot && msg.author.id === targetUserId && msg.content.trim().length > 0) {
           collectedMsgs.push(msg);
         }
@@ -75,7 +93,7 @@ async function handleHarvest(interaction) {
       }).join('\n\n');
     }
 
-    // UTF-8 BOM付きにして文字化けを完全防止
+    // UTF-8 BOM付きにして文字化け防止
     const buffer = Buffer.from('\uFEFF' + fileText, 'utf-8');
     const attachment = new AttachmentBuilder(buffer, { name: fileName });
 
