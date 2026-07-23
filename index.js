@@ -1,28 +1,22 @@
 const { Client, GatewayIntentBits } = require('discord.js');
-const handleMessage = require('./handlers/messageHandler');
-
-// Express サーバー（Render スリープ対策用）
-require('./server');
-
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.MessageContent
   ]
 });
 
-client.once('ready', () => {
-  console.log(`🤖 ログイン成功: ${client.user.tag}`);
+// 🔴 ここを追加：クライアント側でエラーが発生してもBotがクラッシュしないようにする
+client.on('error', error => {
+  console.error('Discordクライアントエラー:', error);
 });
 
-client.on('messageCreate', async (message) => {
-  await handleMessage(message, client);
+// 🔴 ここを追加：処理しきれなかった非同期エラーのクラッシュ防止
+process.on('unhandledRejection', error => {
+  console.error('未処理のPromise拒否:', error);
 });
 
-if (!process.env.DISCORD_TOKEN) {
-  console.error('❌ エラー: DISCORD_TOKEN が設定されていません。');
-} else {
-  client.login(process.env.DISCORD_TOKEN);
-}
+// ボットのログイン処理など...
+client.login(process.env.DISCORD_TOKEN);
