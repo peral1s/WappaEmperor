@@ -2,8 +2,8 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
 
-const handleMessage = require('./handlers/handleMessage'); // パスは適宜合わせてください
-const handleInteraction = require('./handlers/handleInteraction'); // パスは適宜合わせてください
+const handleMessage = require('./handlers/messageHandler');
+const handleInteraction = require('./handlers/interactionHandler');
 
 // 1. Expressサーバー起動（Renderなどの常時稼働用）
 const app = express();
