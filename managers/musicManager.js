@@ -1,7 +1,12 @@
-// Node.jsのネガティブタイマー警告などを抑制
-process.env.NTF_NO_WARNINGS = '1';
+process.on('warning', (warning) => {
+  if (warning.name === 'TimeoutNegativeWarning') return;
+});
 
-// 音声変換エンジン(FFmpeg)のパスを明示的に設定
+// 非同期エラーによるクラッシュを防ぐ安全対策
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未処理の非同期エラーをキャッチしました:', reason);
+});
+
 try {
   process.env.FFMPEG_PATH = require('ffmpeg-static');
 } catch (e) {
@@ -13,12 +18,10 @@ const {
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
-  VoiceConnectionStatus,
-  StreamType
+  VoiceConnectionStatus
 } = require('@discordjs/voice');
 const play = require('play-dl');
 
-// YouTube Cookie の読み込み設定
 if (process.env.YOUTUBE_COOKIE) {
   try {
     play.setToken({
@@ -31,7 +34,6 @@ if (process.env.YOUTUBE_COOKIE) {
   }
 }
 
-// SoundCloud Client ID の自動初期化
 play.getFreeClientID().then((clientID) => {
   play.setToken({
     soundcloud: {
@@ -43,7 +45,6 @@ play.getFreeClientID().then((clientID) => {
   console.warn('SoundCloud Client ID 取得スキップ:', err.message);
 });
 
-// サーバー（Guild）ごとの音楽キューと再生状態を保存
 const guildQueues = new Map();
 
 function getGuildQueue(guildId) {
@@ -61,7 +62,6 @@ function getGuildQueue(guildId) {
   return guildQueues.get(guildId);
 }
 
-// 音声再生処理
 async function playTrack(guildId, messageChannel) {
   const serverQueue = getGuildQueue(guildId);
 
@@ -94,8 +94,9 @@ async function playTrack(guildId, messageChannel) {
   const track = serverQueue.currentTrack;
 
   try {
-    // ストリームの取得
-    const stream = await play.stream(track.url);
+    const stream = await play.stream(track.url).catch(err => {
+      throw new Error(`ストリーム取得失敗: ${err.message || err}`);
+    });
 
     const resource = createAudioResource(stream.stream, {
       inputType: stream.type,
@@ -131,13 +132,11 @@ async function playTrack(guildId, messageChannel) {
   }
 }
 
-// 音楽コマンド判定・制御
 async function handleMusicCommands(message) {
   const content = message.content.trim();
   const guildId = message.guild.id;
   const voiceChannel = message.member?.voice?.channel;
 
-  // w!p <URL または 検索キーワード>
   if (content.startsWith('w!p ')) {
     const query = content.slice(4).trim();
     if (!voiceChannel) return message.reply('…まず貴方がボイスチャンネルに入るのだ');
@@ -145,7 +144,6 @@ async function handleMusicCommands(message) {
 
     const serverQueue = getGuildQueue(guildId);
 
-    // VC未接続の場合に接続を確立
     if (!serverQueue.connection) {
       try {
         serverQueue.connection = joinVoiceChannel({
@@ -155,7 +153,6 @@ async function handleMusicCommands(message) {
           selfDeaf: true
         });
 
-        // 切断検知時の処理
         serverQueue.connection.on(VoiceConnectionStatus.Disconnected, () => {
           try {
             serverQueue.connection.destroy();
@@ -175,9 +172,8 @@ async function handleMusicCommands(message) {
 
     try {
       const tracksToAdd = [];
-      const validation = await play.validate(query);
+      const validation = await play.validate(query).catch(() => null);
 
-      // SoundCloud の場合
       if (validation && validation.startsWith('so_')) {
         const scData = await play.soundcloud(query);
         if (validation === 'so_track') {
@@ -195,7 +191,6 @@ async function handleMusicCommands(message) {
           }));
         }
       }
-      // Spotify の場合
       else if (validation && validation.startsWith('sp_')) {
         if (play.is_expired()) {
           await play.refreshToken();
@@ -216,7 +211,6 @@ async function handleMusicCommands(message) {
           }
         }
       }
-      // YouTube または 検索キーワードの場合
       else {
         if (validation === 'yt_video') {
           try {
@@ -227,7 +221,6 @@ async function handleMusicCommands(message) {
               requestedBy: message.author.username
             });
           } catch (e) {
-            console.warn('YouTube取得失敗。SoundCloudで代替検索します:', e.message);
             const searched = await play.search(query, { limit: 1, source: { soundcloud: 'tracks' } });
             if (searched.length > 0) {
               tracksToAdd.push({
@@ -285,7 +278,6 @@ async function handleMusicCommands(message) {
   const serverQueue = getGuildQueue(guildId);
   if (!serverQueue.connection) return;
 
-  // w!s (スキップ)
   if (content === 'w!s') {
     if (!serverQueue.currentTrack) return message.reply('…再生中の曲がないのだ');
     message.reply('…スキップしたのだ');
@@ -294,7 +286,6 @@ async function handleMusicCommands(message) {
     return;
   }
 
-  // w!dc
   if (content === 'w!dc') {
     serverQueue.connection.destroy();
     guildQueues.delete(guildId);
