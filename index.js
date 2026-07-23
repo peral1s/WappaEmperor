@@ -11,13 +11,12 @@ const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
 
-// --- 🌐 Webサーバーの直接起動（Render対策） ---
+// --- 🌐 Webサーバー起動（Render対策） ---
 const app = express();
 app.get('/', (req, res) => res.send('Bot is running!'));
 app.listen(process.env.PORT || 3000, () => {
   console.log('Web server started');
 });
-// ----------------------------------------------
 
 // Botクライアント初期化
 const client = new Client({
@@ -29,16 +28,16 @@ const client = new Client({
   ]
 });
 
-// 🛡️ クラッシュ防止用エラーハンドラ（※ここを追加！）
+// 🛡️ クラッシュ防止エラーハンドラ
 client.on('error', (error) => {
-  console.error('Discord Clientでエラーが発生したわよ:', error);
+  console.error('Discord Clientエラー:', error);
 });
 
 process.on('unhandledRejection', (error) => {
-  console.error('未処理のPromiseエラーを発見したわ:', error);
+  console.error('未処理のPromiseエラー:', error);
 });
 
-// Bot起動イベント処理
+// Bot起動イベント
 client.once('ready', async () => {
   await connectDB();
   console.log('Bot起動！');
@@ -60,5 +59,5 @@ client.once('ready', async () => {
 client.on('messageCreate', (message) => handleMessage(message, client));
 client.on('interactionCreate', (interaction) => handleInteraction(interaction, client));
 
-// Discordにログイン
+// ログイン
 client.login(process.env.TOKEN);
