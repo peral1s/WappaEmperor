@@ -29,6 +29,15 @@ const client = new Client({
   ]
 });
 
+// 🛡️ クラッシュ防止用エラーハンドラ（※ここを追加！）
+client.on('error', (error) => {
+  console.error('Discord Clientでエラーが発生したわよ:', error);
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error('未処理のPromiseエラーを発見したわ:', error);
+});
+
 // Bot起動イベント処理
 client.once('ready', async () => {
   await connectDB();
