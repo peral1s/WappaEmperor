@@ -4,7 +4,8 @@ const { getAllStats } = require('../db/database');
 const tarotCards = require('../data/tarot');
 
 async function handleInteraction(interaction, client) {
-  if (!interaction.isChatInputCommand()) return;
+  // スラッシュコマンド＋アプリコマンド（コンテキストメニュー等）を受け付けるように変更
+  if (!interaction.isCommand()) return;
 
   const stats = await getAllStats();
   const { commandName } = interaction;
