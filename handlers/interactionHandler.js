@@ -2,13 +2,21 @@ const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
 const { getAllStats } = require('../db/database');
 const tarotCards = require('../data/tarot');
+const handleHarvest = require('./harvestHandler'); // 💡 追加
 
 async function handleInteraction(interaction, client) {
-  // スラッシュコマンド＋アプリコマンド（コンテキストメニュー等）を受け付けるように変更
   if (!interaction.isCommand()) return;
 
   const stats = await getAllStats();
   const { commandName } = interaction;
+
+  // 💡 harvest コマンドの呼び出し（切り離し対応）
+  if (commandName === 'harvest') {
+    return handleHarvest(interaction);
+  }
+
+  // --- 以下、既存のコマンド群（tarot, log, rank, luck 等） ---
+
 
   // タロット占い機能
   if (commandName === 'tarot') {
