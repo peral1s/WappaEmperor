@@ -1,55 +1,43 @@
-require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
-const express = require('express');
-
+const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
+const startServer = require('./server');
+const { connectDB } = require('./db/database');
+const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
 
-// 1. Expressサーバー起動（Renderなどの常時稼働用）
-const app = express();
-const PORT = process.env.PORT || 3000;
+// Expressサーバー開始
+startServer();
 
-app.get('/', (req, res) => {
-  res.send('Bot is running!');
-});
-
-app.listen(PORT, () => {
-  console.log(`🌐 サーバーがポート ${PORT} で起動したのだ`);
-});
-
-// 2. Discordクライアントの初期化
+// Discord Clientセットアップ
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
   ]
 });
 
-// エラーでBotがクラッシュしないための安全対策
-client.on('error', error => {
-  console.error('Discordクライアントエラー:', error);
+// Bot起動処理
+client.once('ready', async () => {
+  await connectDB();
+  console.log('Bot起動！');
+
+  const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+
+  try {
+    await rest.put(
+      Routes.applicationCommands(client.user.id),
+      { body: commands }
+    );
+    console.log('スラッシュコマンド登録完了');
+  } catch (err) {
+    console.error('スラッシュコマンド登録失敗:', err);
+  }
 });
 
-process.on('unhandledRejection', error => {
-  console.error('未処理のPromise拒否:', error);
-});
-
-// Bot起動時の処理
-client.once('ready', () => {
-  console.log(`✨ ログイン成功のだ: ${client.user.tag}`);
-});
-
-// メッセージ受信時の処理
-client.on('messageCreate', async message => {
-  await handleMessage(message, client);
-});
-
-// スラッシュコマンドなどのインタラクション処理
-client.on('interactionCreate', async interaction => {
-  await handleInteraction(interaction, client);
-});
+// イベントリスナーの登録
+client.on('messageCreate', (message) => handleMessage(message, client));
+client.on('interactionCreate', (interaction) => handleInteraction(interaction, client));
 
 // ログイン
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.TOKEN);
