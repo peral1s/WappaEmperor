@@ -5,19 +5,20 @@ const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
 
-// Expressサーバー開始
+// Webサーバー起動
 startServer();
 
-// Discord Clientセットアップ
+// Botクライアント初期化（VoiceStates インテントを追加）
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates
   ]
 });
 
-// Bot起動処理
+// Bot起動イベント処理
 client.once('ready', async () => {
   await connectDB();
   console.log('Bot起動！');
@@ -35,9 +36,9 @@ client.once('ready', async () => {
   }
 });
 
-// イベントリスナーの登録
+// イベント割り当て
 client.on('messageCreate', (message) => handleMessage(message, client));
 client.on('interactionCreate', (interaction) => handleInteraction(interaction, client));
 
-// ログイン
+// Discordにログイン
 client.login(process.env.TOKEN);
