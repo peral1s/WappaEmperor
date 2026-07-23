@@ -1,17 +1,27 @@
 const { AttachmentBuilder } = require('discord.js');
 
+// 💡 日付文字列から Discord の Snowflake ID を生成する関数
+function dateToSnowflake(dateStr) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return null;
+
+  const DISCORD_EPOCH = 1420070400000n;
+  const timestamp = BigInt(date.getTime());
+  if (timestamp < DISCORD_EPOCH) return null;
+
+  return ((timestamp - DISCORD_EPOCH) << 22n).toString();
+}
+
 async function handleHarvest(interaction) {
   // ==========================================
   // ⚙️ ID・権限設定
   // ==========================================
-  // 1. 実行可能者（あなた専用）
-  const ALLOWED_USER_ID = '768022305279574067';
-
-  // 2. デフォルトの抽出対象（和紙）
-  const DEFAULT_TARGET_ID = '1005698535603322881';
+  const ALLOWED_USER_ID = '768022305279574067';   // 実行権限者（あなた専用）
+  const DEFAULT_TARGET_ID = '1005698535603322881'; // デフォルト抽出対象（和紙）
   // ==========================================
 
-  // 実行権限チェック（実行可能者以外は弾く）
+  // 実行権限チェック
   if (interaction.user.id !== ALLOWED_USER_ID) {
     return interaction.reply({ 
       content: '…貴方に和紙の記憶を収穫（抽出）する素質がないのだ', 
@@ -21,7 +31,7 @@ async function handleHarvest(interaction) {
 
   await interaction.deferReply({ ephemeral: true });
 
-  // 💡 抽出対象のユーザーを取得（選択されていなければデフォルトで 和紙）
+  // 抽出対象の判定
   const selectedUser = interaction.options.getUser('user');
   let targetUser;
 
@@ -38,10 +48,19 @@ async function handleHarvest(interaction) {
   const targetUserId = targetUser.id;
   const scanLimit = Math.min(interaction.options.getInteger('limit') || 1000, 5000);
   const format = interaction.options.getString('format') || 'log';
+  const inputDate = interaction.options.getString('date');
   const channel = interaction.channel;
 
+  // 💡 日付指定があれば、その時点の Snowflake ID を起点にする
+  let lastMessageId = dateToSnowflake(inputDate);
+
+  if (inputDate && !lastMessageId) {
+    return interaction.editReply({
+      content: '…日付の形式が正しくないのだ。（例: `2022-10-01` や `2023-05` 形式で入力するのだ）'
+    });
+  }
+
   let collectedMsgs = [];
-  let lastMessageId;
   let scannedCount = 0;
 
   try {
@@ -56,7 +75,6 @@ async function handleHarvest(interaction) {
       scannedCount += fetchedMessages.size;
 
       fetchedMessages.forEach(msg => {
-        // Bot以外の発言 ＆ 抽出対象ユーザー（指定なしなら和紙）の発言のみピックアップ
         if (!msg.author.bot && msg.author.id === targetUserId && msg.content.trim().length > 0) {
           collectedMsgs.push(msg);
         }
@@ -66,8 +84,9 @@ async function handleHarvest(interaction) {
     }
 
     if (collectedMsgs.length === 0) {
+      const startMsg = inputDate ? `**${inputDate}** の時点から ` : '';
       return interaction.editReply({ 
-        content: `…スキャンした **${scannedCount}** 件の中に、**${targetUser.username}**（ID: \`${targetUserId}\`）の発言は見つからなかったのだ` 
+        content: `…${startMsg}スキャンした **${scannedCount}** 件の中に、**${targetUser.username}**（ID: \`${targetUserId}\`）の発言は見つからなかったのだ` 
       });
     }
 
@@ -78,15 +97,12 @@ async function handleHarvest(interaction) {
     let fileName = `${targetUser.username}_${format}_${Date.now()}.txt`;
 
     if (format === 'text') {
-      // 発言テキストのみ
       fileText = collectedMsgs.map(m => m.content).join('\n');
     } else if (format === 'array') {
-      // JS配列形式
       const formattedLines = collectedMsgs.map(m => `  "${m.content.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
       fileText = `[\n${formattedLines.join(',\n')}\n]`;
       fileName = `${targetUser.username}_replies_${Date.now()}.js`;
     } else {
-      // 日付付き詳細ログ
       fileText = collectedMsgs.map(m => {
         const dateStr = m.createdAt.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
         return `[${dateStr}] ${m.content}`;
@@ -97,14 +113,15 @@ async function handleHarvest(interaction) {
     const buffer = Buffer.from('\uFEFF' + fileText, 'utf-8');
     const attachment = new AttachmentBuilder(buffer, { name: fileName });
 
+    const dateNotice = inputDate ? `（**${inputDate}** 時点から過去へ探索）` : '';
     return interaction.editReply({
-      content: `✅ **${scannedCount}** 件中から、**${targetUser.username}** の発言 **${collectedMsgs.length}** 件を正常に抽出したのだ！`,
+      content: `✅ **${scannedCount}** 件中${dateNotice}から、**${targetUser.username}** の発言 **${collectedMsgs.length}** 件を正常に抽出したのだ！`,
       files: [attachment]
     });
 
   } catch (error) {
     console.error('抽出エラー:', error);
-    return interaction.editReply({ content: '…過去ログの抽出中にエラーが発生したのだ。Botに「メッセージ履歴を読む」権限があるか確認するのだ。' });
+    return interaction.editReply({ content: '…過去ログの抽出中にエラーが発生したのだ。' });
   }
 }
 
