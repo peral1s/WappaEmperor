@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
 const { getAllStats } = require('../db/database');
 const handleHarvest = require('./harvestHandler');
-const handleTarot = require('../data/tarot'); // 👈 パスを ../data/tarot に変更！
+const handleTarot = require('../data/tarot'); // data配下のtarot.jsを正常読み込み
 
 async function handleInteraction(interaction, client) {
   if (!interaction.isCommand()) return;
@@ -17,7 +17,7 @@ async function handleInteraction(interaction, client) {
 
   // tarot コマンド
   if (commandName === 'tarot') {
-    return handleTarot(interaction);
+    return handleTarot(interaction, client);
   }
 
   if (commandName === 'log') {
