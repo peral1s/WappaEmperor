@@ -119,7 +119,8 @@ async function handleTarot(interaction, client) {
     const card = tarotCards[Math.floor(Math.random() * tarotCards.length)];
     const isUpright = Math.random() >= 0.5;
 
-    const positionText = isUpright ? '【表（正位置）ね】' : '【裏（逆位置）かしら】';
+    // 表示を「【正位置】」「【逆位置】」に変更
+    const positionText = isUpright ? '【正位置】' : '【逆位置】';
     const meaning = isUpright ? card.upright : card.reversed;
 
     const footers = [
@@ -137,15 +138,14 @@ async function handleTarot(interaction, client) {
     ];
     const randomFooter = footers[Math.floor(Math.random() * footers.length)];
 
-    // 安全なアイコン画像の取得
     const avatarUrl = interaction.client?.user?.displayAvatarURL() || (client && client.user ? client.user.displayAvatarURL() : '');
 
     const embed = new EmbedBuilder()
       .setColor(isUpright ? 0x2ECC71 : 0xE74C3C)
-      .setTitle(`🔮 ${interaction.user.username} の運命を和紙が占ってあげるわよ`)
+      .setTitle(`🔮 ${interaction.user.username} の運命`)
       .setThumbnail(avatarUrl)
       .setDescription(
-`和紙が引き当てたカードはこれかしら…
+`和紙が引き当てたカードはこれだ…
 
 ### **${card.name}** ${positionText}
 
@@ -157,7 +157,7 @@ async function handleTarot(interaction, client) {
   } catch (error) {
     console.error('タロット実行エラー:', error);
     if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({ content: '占いの途中で何か問題が起きたみたいね…', ephemeral: true });
+      await interaction.reply({ content: '占いの途中で何か問題が起きたみたいだ…', ephemeral: true });
     }
   }
 }
