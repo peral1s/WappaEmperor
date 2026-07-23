@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
 const { getAllStats } = require('../db/database');
-const handleHarvest = require('./harvestHandler');
+const handleHarvest = require('./handlers/harvestHandler');
 
 // 🔮 タロットカード大アルカナ全22種
 const tarotCards = [
