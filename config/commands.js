@@ -25,13 +25,13 @@ const commands = [
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
 
-  // 💡 Yougaの発言ログ抽出コマンド
+   // 💡 発言ログ抽出コマンド
   new SlashCommandBuilder()
     .setName('harvest')
     .setDescription('…指定したユーザーの発言ログを遡ってテキストファイルで抽出するのだ')
     .addUserOption(opt =>
       opt.setName('user')
-         .setDescription('抽出したいユーザー（指定しない場合はYouga）')
+         .setDescription('抽出したいユーザー（指定しない場合のデフォルトは 和紙）')
          .setRequired(false)
     )
     .addIntegerOption(opt => 
@@ -49,6 +49,7 @@ const commands = [
            { name: '日付付き詳細ログ', value: 'log' }
          )
     ),
+
 
   new SlashCommandBuilder().setName('addall').setDescription('…all（全体返信）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addwappa').setDescription('…wappa（RPG）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
