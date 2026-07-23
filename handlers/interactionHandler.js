@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
 const { getAllStats } = require('../db/database');
 const handleHarvest = require('./harvestHandler');
-const handleTarot = require('./tarotHandler'); // 💡 タロットも外部ハンドラーに統一
+const handleTarot = require('../data/tarot'); // 👈 パスを ../data/tarot に変更！
 
 async function handleInteraction(interaction, client) {
   if (!interaction.isCommand()) return;
@@ -10,17 +10,15 @@ async function handleInteraction(interaction, client) {
   const stats = await getAllStats();
   const { commandName } = interaction;
 
-  // 💡 harvest コマンドの呼び出し
+  // harvest コマンド
   if (commandName === 'harvest') {
     return handleHarvest(interaction);
   }
 
-  // 🔮 tarot コマンドの呼び出し（リアル口調版）
+  // tarot コマンド
   if (commandName === 'tarot') {
     return handleTarot(interaction);
   }
-
-  // --- 以下、既存のコマンド群（log, rank, luck 等） ---
 
   if (commandName === 'log') {
     const target = interaction.options.getUser('user') || interaction.user;
