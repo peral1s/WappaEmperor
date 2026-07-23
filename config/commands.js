@@ -25,10 +25,15 @@ const commands = [
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
 
-  // 💡 フォーマット選択を追加した harvest コマンド
+  // 💡 Yougaの発言ログ抽出コマンド
   new SlashCommandBuilder()
     .setName('harvest')
-    .setDescription('…Yougaの発言ログを遡ってテキストファイルで抽出するのだ')
+    .setDescription('…指定したユーザーの発言ログを遡ってテキストファイルで抽出するのだ')
+    .addUserOption(opt =>
+      opt.setName('user')
+         .setDescription('抽出したいユーザー（指定しない場合はYouga）')
+         .setRequired(false)
+    )
     .addIntegerOption(opt => 
       opt.setName('limit')
          .setDescription('遡る最大メッセージ件数（デフォルト: 1000件 / 最大: 5000件）')
