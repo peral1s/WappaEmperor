@@ -1,16 +1,31 @@
 const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
-const { getAllStats } = require('../db/database');
+const { getAllStats, addDisabledChannel } = require('../db/database'); // 👈 addDisabledChannel を追加
 const handleHarvest = require('./harvestHandler');
-const handleTarot = require('../data/tarot'); // data配下のtarot.jsを正常読み込み
+const handleTarot = require('../data/tarot');
 
 async function handleInteraction(interaction, client) {
   if (!interaction.isCommand()) return;
 
-  const stats = await getAllStats();
   const { commandName } = interaction;
 
-  // harvest コマンド
+  // 🛑 出現無効化コマンド (/lemove)
+  if (commandName === 'lemove') {
+    const targetChannel = interaction.options.getChannel('channel');
+
+    if (!targetChannel) {
+      return interaction.reply({ content: '…チャンネルを指定するのだ', ephemeral: true });
+    }
+
+    await addDisabledChannel(targetChannel.id);
+
+    return interaction.reply({
+      content: `…**<#${targetChannel.id}>** では今後和紙が出現しないように設定したのだ。静かにしておくのだ`
+    });
+  }
+
+  // ... 以下、既存のインタラクション処理 ...
+
   if (commandName === 'harvest') {
     return handleHarvest(interaction);
   }
