@@ -25,6 +25,16 @@ const commands = [
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
 
+  // 🛑 出現無効化コマンド
+  new SlashCommandBuilder()
+    .setName('lemove')
+    .setDescription('…指定したチャンネルで和紙が出現（応答）しないように設定するのだ')
+    .addChannelOption(option =>
+      option.setName('channel')
+            .setDescription('出現を無効化したいチャンネル')
+            .setRequired(true)
+    ),
+
   // 💡 発言ログ抽出コマンド（日付ジャンプ・ユーザー指定対応版）
   new SlashCommandBuilder()
     .setName('harvest')
