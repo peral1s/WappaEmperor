@@ -1,13 +1,19 @@
 const replyData = require('../data/replies');
-const { updateUserStats } = require('../db/database');
+const { updateUserStats, isChannelDisabled } = require('../db/database'); // 👈 isChannelDisabled を追加
 const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 
 async function handleMessage(message, client) {
   if (message.author.bot) return;
 
+  // 🚫 出現除外チャンネルの場合は処理を中断
+  if (await isChannelDisabled(message.channel.id)) return;
+
   console.log(`チャンネル:${message.channel.name} ID:${message.channel.id}`);
 
   if (!message.guild) return;
+
+  // ... 以下、既存の処理 ...
+
 
   // ==========================================
   // ボイスチャンネル参加・退出機能
