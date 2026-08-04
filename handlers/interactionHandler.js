@@ -9,8 +9,8 @@ async function handleInteraction(interaction, client) {
 
   const { commandName } = interaction;
 
-  // 🛑 出現無効化コマンド (/lemove)
-  if (commandName === 'lemove') {
+  // 🛑 出現無効化コマンド (/leave)
+  if (commandName === 'leave') {
     const targetChannel = interaction.options.getChannel('channel');
 
     if (!targetChannel) {
@@ -20,7 +20,7 @@ async function handleInteraction(interaction, client) {
     await addDisabledChannel(targetChannel.id);
 
     return interaction.reply({
-      content: `…**<#${targetChannel.id}>** では今後和紙が出現しないように設定したのだ。静かにしておくのだ`
+      content: `…**<#${targetChannel.id}>** では今後和紙が出現しないように設定したのだ。…和紙、嫌われてるんかなぁ`
     });
   }
 
@@ -35,14 +35,17 @@ async function handleInteraction(interaction, client) {
     return handleTarot(interaction, client);
   }
 
+    // 1. log コマンドの修正
   if (commandName === 'log') {
+    await interaction.deferReply(); // DB読み込み中のタイムアウトを防ぐ
+    const stats = (await getAllStats()) || {}; // 👈 これを追加！
+
     const target = interaction.options.getUser('user') || interaction.user;
     const data = stats[target.id];
 
     if (!data) {
-      return interaction.reply({
-        content: '…和紙をまだ呼び出していないのだ',
-        ephemeral: true
+      return interaction.editReply({
+        content: '…和紙をまだ呼び出していないのだ'
       });
     }
 
@@ -64,11 +67,14 @@ async function handleInteraction(interaction, client) {
         text: '…もっと和紙を呼び出すのだ\nあ〜せや、貴方RPGって得意？'
       });
 
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({ embeds: [embed] });
   }
 
+  // 2. rank コマンドの修正
   if (commandName === 'rank') {
     await interaction.deferReply();
+    const stats = (await getAllStats()) || {}; // 👈 これを追加！
+
     const ranking = Object.values(stats).sort((a, b) => b.mention - a.mention).slice(0, 5);
     const total = Object.values(stats).reduce((sum, u) => sum + u.mention, 0);
     const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
@@ -94,8 +100,11 @@ async function handleInteraction(interaction, client) {
     return interaction.editReply({ embeds: [embed] });
   }
 
+  // 3. luck コマンドの修正
   if (commandName === 'luck') {
     await interaction.deferReply();
+    const stats = (await getAllStats()) || {}; // 👈 これを追加！
+
     const ranking = Object.values(stats).sort((a, b) => b.lucky - a.lucky).filter(u => u.lucky > 0).slice(0, 5);
     const total = Object.values(stats).reduce((sum, u) => sum + u.lucky, 0);
     const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
@@ -120,6 +129,7 @@ async function handleInteraction(interaction, client) {
 
     return interaction.editReply({ embeds: [embed] });
   }
+
 
   if (commandName === 'tomato') {
     const reply = replyData.tomatoReplies[Math.floor(Math.random() * replyData.tomatoReplies.length)];
