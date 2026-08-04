@@ -18,7 +18,7 @@ const commands = [
   new SlashCommandBuilder().setName('kiwi').setDescription('…和紙がきぅいの歌を歌うのだ'),
   new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
   new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史図鑑なのだ'),
-  new SlashCommandBuilder().setName('tarot').setDescription('…和紙のタロット占いなのだ'),
+  new SlashCommandBuilder().setName('tarot').setDescription('…和紙のタロット占いなのだ 結構マジで当たるのだ'),
 
   new SlashCommandBuilder().setName('all').setDescription('…和紙の、歴史…なのだ'),
   new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
@@ -27,7 +27,7 @@ const commands = [
 
   // 🛑 出現無効化コマンド
   new SlashCommandBuilder()
-    .setName('lemove')
+    .setName('leave')
     .setDescription('…指定したチャンネルで和紙が出現（応答）しないように設定するのだ')
     .addChannelOption(option =>
       option.setName('channel')
