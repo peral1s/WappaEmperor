@@ -17,10 +17,10 @@ const commands = [
   new SlashCommandBuilder().setName('tomato').setDescription('…的トマトの歴史なのだ'),
   new SlashCommandBuilder().setName('kiwi').setDescription('…和紙がきぅいの歌を歌うのだ'),
   new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
-  new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史図鑑なのだ'),
+  new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史なのだ'),
   new SlashCommandBuilder().setName('tarot').setDescription('…和紙のタロット占いなのだ 結構マジで当たるのだ'),
 
-  new SlashCommandBuilder().setName('all').setDescription('…和紙の、歴史…なのだ'),
+  new SlashCommandBuilder().setName('all').setDescription('和紙の…歴史、なのだ'),
   new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
