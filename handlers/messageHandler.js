@@ -91,7 +91,7 @@ async function handleMessage(message, client) {
   }
 
   if (message.content.includes('トマトの偉大さ')) {
-    message.channel.send('そんなものないよおおおんwwwww');
+    message.channel.send('## そんなものないよおおおんwwwww');
   }
 
   if (message.content.includes('洋楽')) {
@@ -103,7 +103,7 @@ async function handleMessage(message, client) {
   }
 
   if (message.content.includes('神の旅　ああ神の旅　神の旅')) {
-    message.channel.send('あっぱれ！');
+    message.channel.send('# あっぱれ！');
   }
   
   if (message.content.includes('洋菓子')) {
@@ -119,7 +119,7 @@ async function handleMessage(message, client) {
   }
    
   if (message.content.includes('優雅')) {
-    message.channel.send('youga');
+    message.channel.send('# youga');
   }
   
   if (message.content.includes('夕方')) {
@@ -138,7 +138,7 @@ async function handleMessage(message, client) {
   }
 
   if (message.content.includes('彼女')) {
-    message.channel.send('彼女を検出‼️‼️‼️\n嫉妬モード発動‼️‼️‼️\nンニィィィィィィィィィィ‼️‼️');
+    message.channel.send('# 彼女を検出‼️‼️‼️\n嫉妬モード発動‼️‼️‼️\nンニィィィィィィィィィィ‼️‼️');
   }
 
   const sexWords = ['セックス', 'サックス', 'シックス', 'ソックス', 'せっくす', 'sax', 'six', 'sex', 'sox', 'せくす', 'セクス', 'せくしー', 'セクシー'];
@@ -148,7 +148,7 @@ async function handleMessage(message, client) {
 
   const fellaWords = ['ふぇら', 'フェラ', 'フエラ', 'ふえら', 'fella'];
   if (fellaWords.some(word => content.includes(word))) {
-    message.channel.send('フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
+    message.channel.send('# フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
   
   if (message.content.includes('6号')) {
