@@ -159,6 +159,11 @@ async function handleInteraction(interaction, client) {
     return interaction.reply({ content: reply });
   }
 
+  if (commandName === 'mgm') {
+    const reply = replyData.megamiReplies[Math.floor(Math.random() * replyData.megamiReplies.length)];
+    return interaction.reply({ content: reply });
+  }
+
   if (commandName === 'cpc') {
     const reply = replyData.helloReplies[Math.floor(Math.random() * replyData.helloReplies.length)];
     return interaction.reply({ content: reply });
@@ -197,6 +202,10 @@ async function handleInteraction(interaction, client) {
     if (commandName === 'addall') {
       replyData.replies.push(newWord);
       targetName = '全体（all）';
+      replyData.adaReplies.push(newWord);
+      if (commandName === 'addmgm') {
+      replyData.replies.push(newWord);
+      targetName = '女神（mgm）';
     } else if (commandName === 'addwappa') {
       replyData.adaReplies.push(newWord);
       targetName = '和紙（wappa）';
