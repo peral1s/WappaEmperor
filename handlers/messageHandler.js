@@ -97,7 +97,18 @@ async function handleMessage(message, client) {
   if (message.content.includes('洋楽')) {
     message.channel.send('yougaく');
   }
+  
+  if (message.content.includes('溶岩')) {
+    message.channel.send('yougaん');
+  }
 
+    if (message.content.includes('神の旅　ああ神の旅　神の旅')) {
+    message.channel.send('あっぱれ！');
+  }
+    if (message.content.includes('洋菓子')) {
+    message.channel.send('yougaし');
+  }
+  
   if (message.content.includes('いぷしろん')) {
     message.channel.send('https://cdn.discordapp.com/attachments/1193815699630592160/1508109462924165201/IMG_2749.png?ex=6a1457e3&is=6a130663&hm=e877e89dd071fdfdea49ff3f69b2bd90092254af14079285fbc8af88187cada1&');
   }
@@ -111,7 +122,7 @@ async function handleMessage(message, client) {
   }
 
   if (message.content.includes('彼女')) {
-    message.channel.send('彼女を検出！！！！！！\n嫉嫉妬モード発動！！！！！\nンニィィィィィィィィィィィィィ');
+    message.channel.send('彼女を検出‼️‼️‼️\n嫉妬モード発動‼️‼️‼️\nンニィィィィィィィィィィ‼️‼️');
   }
 
   const sexWords = ['セックス', 'サックス', 'シックス', 'ソックス', 'せっくす', 'sax', 'six', 'sex', 'sox', 'せくす', 'セクス', 'せくしー', 'セクシー'];
@@ -124,19 +135,15 @@ async function handleMessage(message, client) {
     message.channel.send('フェラを検出‼️\n-# 汚い言葉が好きな人はちょっと…和紙達お紳士なので…');
   }
   
-  if (message.content.includes('/はっぴぃ')) {
-    message.channel.send('ﾄﾞﾗｺﾞｫﾝｯwﾎﾞｫｫﾙwｵﾚﾊﾀｲﾖｳw\nﾄﾞﾗｺﾞｫﾝｯwﾎﾞｫｫﾙwｵﾏｴﾊﾂｷw\nﾄｹｱｴﾊﾞｧwｷｨｾｪｷｨﾉｫﾊﾟﾜｧｧｧw\nｻｲｷｮｫﾉwﾌｭｰｼﾞｮﾝｯｯｯｯw');
-  }
-
-  if (message.content.includes('/6号')) {
+  if (message.content.includes('6号')) {
     message.channel.send('よしかるを検出‼️');
   }
 
-  if (message.content.includes('/レモブル')) {
+  if (message.content.includes('レモブル')) {
     message.channel.send('6号を検出‼️');
   }
 
-  if (message.content.includes('/よしかる')) {
+  if (message.content.includes('よしかる')) {
     message.channel.send('レモブルを検出‼️');
   }
 
@@ -145,7 +152,7 @@ async function handleMessage(message, client) {
     message.channel.send(reply);
   }
 
-  if (message.content.includes('/二ドアイ')) {
+  if (message.content.includes('二ドアイ')) {
     message.channel.send('https://cdn.discordapp.com/attachments/1502569232574058637/1512178975886020710/quote_1503055273198354665.png?ex=6a2325ea&is=6a21d46a&hm=436269d39b10d87e66e299c4991816f7263fa0a450656d1271fcab11163fd1e0&');
   }
 }
