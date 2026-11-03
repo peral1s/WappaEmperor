@@ -204,7 +204,7 @@ async function handleInteraction(interaction, client) {
       targetName = '全体（all）';
       
     } else if (commandName === 'addmgm') {
-      replyData.megamireplies.push(newWord);
+      replyData.megamiReplies.push(newWord);
       targetName = '女神（mgm）';
       
     } else if (commandName === 'addwappa') {
