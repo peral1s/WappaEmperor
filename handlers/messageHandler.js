@@ -102,13 +102,29 @@ async function handleMessage(message, client) {
     message.channel.send('yougaん');
   }
 
-    if (message.content.includes('神の旅　ああ神の旅　神の旅')) {
+  if (message.content.includes('神の旅　ああ神の旅　神の旅')) {
     message.channel.send('あっぱれ！');
   }
-    if (message.content.includes('洋菓子')) {
+  
+  if (message.content.includes('洋菓子')) {
     message.channel.send('yougaし');
   }
+
+  if (message.content.includes('洋傘')) {
+    message.channel.send('yougaさ');
+  }
   
+  if (message.content.includes('有害')) {
+    message.channel.send('yougaい');
+  }
+   
+  if (message.content.includes('優雅')) {
+    message.channel.send('youga');
+  }
+  
+  if (message.content.includes('夕方')) {
+    message.channel.send('yougaた');
+  }
   if (message.content.includes('いぷしろん')) {
     message.channel.send('https://cdn.discordapp.com/attachments/1193815699630592160/1508109462924165201/IMG_2749.png?ex=6a1457e3&is=6a130663&hm=e877e89dd071fdfdea49ff3f69b2bd90092254af14079285fbc8af88187cada1&');
   }
