@@ -203,7 +203,7 @@ async function handleInteraction(interaction, client) {
       replyData.replies.push(newWord);
       targetName = '全体（all）';
       
-    if (commandName === 'addmgm') {
+    } else if (commandName === 'addmgm') {
       replyData.replies.push(newWord);
       targetName = '女神（mgm）';
       
