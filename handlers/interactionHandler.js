@@ -184,7 +184,7 @@ async function handleInteraction(interaction, client) {
   }
 
   // 記憶追加用コマンドの一括処理
-  const addCommands = ['addall', 'addwappa', 'addtomato', 'addao', 'addcpc', 'addgal_tomato'];
+  const addCommands = ['addall', 'addwappa', 'addtomato', 'addao', 'addcpc', 'addmgm', 'addgal_tomato'];
 
   if (addCommands.includes(commandName)) {
     const allowedUsers = ['768022305279574067'];
