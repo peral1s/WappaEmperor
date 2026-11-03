@@ -202,22 +202,27 @@ async function handleInteraction(interaction, client) {
     if (commandName === 'addall') {
       replyData.replies.push(newWord);
       targetName = '全体（all）';
-      replyData.adaReplies.push(newWord);
-      if (commandName === 'addmgm') {
+      
+    if (commandName === 'addmgm') {
       replyData.replies.push(newWord);
       targetName = '女神（mgm）';
+      
     } else if (commandName === 'addwappa') {
       replyData.adaReplies.push(newWord);
       targetName = '和紙（wappa）';
+      
     } else if (commandName === 'addtomato') {
       replyData.tomatoReplies.push(newWord);
       targetName = '的トマト（tomato）';
+      
     } else if (commandName === 'addao') {
       replyData.aoReplies.push(newWord);
       targetName = 'あお（ao）';
+      
     } else if (commandName === 'addcpc') {
       replyData.helloReplies.push(newWord);
       targetName = 'カートゥーンポテチ（cpc）';
+      
     } else if (commandName === 'addgal_tomato') {
       replyData.gyarutomatoReplies.push(newWord);
       targetName = 'ギャルトマト列伝（gal_tomato）';
