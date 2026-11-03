@@ -15,6 +15,7 @@ const commands = [
   new SlashCommandBuilder().setName('luck').setDescription('和紙が応じたランキングが見れるのだ'),
   
   new SlashCommandBuilder().setName('tomato').setDescription('…的トマトの歴史なのだ'),
+  new SlashCommandBuilder().setName('mgm').setDescription('…女神の歴史なのだ'),
   new SlashCommandBuilder().setName('kiwi').setDescription('…和紙がきぅいの歌を歌うのだ'),
   new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
   new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史なのだ'),
@@ -66,11 +67,12 @@ const commands = [
     ),
 
   new SlashCommandBuilder().setName('addall').setDescription('…all（全体返信）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
-  new SlashCommandBuilder().setName('addwappa').setDescription('…wappa（RPG）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
-  new SlashCommandBuilder().setName('addtomato').setDescription('…tomatoに新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+  new SlashCommandBuilder().setName('addmgm').setDescription('…mgm（女神）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+  new SlashCommandBuilder().setName('addwappa').setDescription('…wappa（和紙）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+  new SlashCommandBuilder().setName('addtomato').setDescription('…tomato(的トマト)に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addao').setDescription('…ao（黒歴史）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addcpc').setDescription('…cpc（ポテチロボ）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
-  new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true))
+  new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト列伝）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true))
 ].map(cmd => {
   // 全コマンドにDM対応・ユーザーアプリ対応・コンテキスト設定を適用
   if (typeof cmd.setIntegrationTypes === 'function') {
