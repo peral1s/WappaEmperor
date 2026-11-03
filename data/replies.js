@@ -200,7 +200,7 @@ Among us
     'https://plicy.net/GamePlay/180908'
   ],
 
-  gyarutomatoReplies: [
+  megamiReplies: [
     '昨日仕分けしてたら\nたまたまダンボールについてた\n割れ物注意シールが取れちゃって、\nそのダンボールはもう\nベルトコンベアに流してしまったから\n余ったシール別の箱に貼っといた'
   ],
   
