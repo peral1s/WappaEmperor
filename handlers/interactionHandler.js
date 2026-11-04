@@ -1,8 +1,45 @@
 const { EmbedBuilder } = require('discord.js');
 const replyData = require('../data/replies');
-const { getAllStats, addDisabledChannel } = require('../db/database'); // 👈 addDisabledChannel を追加
+
+const {
+  getAllStats,
+  addDisabledChannel,
+  addCustomReply,
+  getCustomReplies
+} = require('../db/database');
+
 const handleHarvest = require('./harvestHandler');
 const handleTarot = require('../data/tarot');
+
+// 返信カテゴリーと元データの対応
+const replyCategories = {
+  all: 'replies',
+  tomato: 'tomatoReplies',
+  ao: 'aoReplies',
+  wappa: 'adaReplies',
+  mgm: 'megamiReplies',
+  cpc: 'helloReplies',
+  gal_tomato: 'gyarutomatoReplies'
+};
+
+// DBの追加文章と元の返信文章を合体させる
+async function getReplyList(category) {
+  const originalReplies = replyData[category] || [];
+  const customReplies = await getCustomReplies(category);
+
+  return [...originalReplies, ...customReplies];
+}
+
+// ランダム返信を取得
+async function getRandomReply(category) {
+  const replies = await getReplyList(category);
+
+  if (replies.length === 0) {
+    return '…まだ記憶がないのだ';
+  }
+
+  return replies[Math.floor(Math.random() * replies.length)];
+}
 
 async function handleInteraction(interaction, client) {
   if (!interaction.isCommand()) return;
@@ -14,7 +51,10 @@ async function handleInteraction(interaction, client) {
     const targetChannel = interaction.options.getChannel('channel');
 
     if (!targetChannel) {
-      return interaction.reply({ content: '…チャンネルを指定するのだ', ephemeral: true });
+      return interaction.reply({
+        content: '…チャンネルを指定するのだ',
+        ephemeral: true
+      });
     }
 
     await addDisabledChannel(targetChannel.id);
@@ -24,23 +64,25 @@ async function handleInteraction(interaction, client) {
     });
   }
 
-  // ... 以下、既存のインタラクション処理 ...
-
+  // 発言ログ抽出
   if (commandName === 'harvest') {
     return handleHarvest(interaction);
   }
 
-  // tarot コマンド
+  // タロット占い
   if (commandName === 'tarot') {
     return handleTarot(interaction, client);
   }
 
-    // 1. log コマンドの修正
+  // 1. log コマンド
   if (commandName === 'log') {
-    await interaction.deferReply(); // DB読み込み中のタイムアウトを防ぐ
-    const stats = (await getAllStats()) || {}; // 👈 これを追加！
+    await interaction.deferReply();
 
-    const target = interaction.options.getUser('user') || interaction.user;
+    const stats = (await getAllStats()) || {};
+
+    const target =
+      interaction.options.getUser('user') || interaction.user;
+
     const data = stats[target.id];
 
     if (!data) {
@@ -49,15 +91,19 @@ async function handleInteraction(interaction, client) {
       });
     }
 
-    const member = interaction.guild.members.cache.get(target.id);
-    const serverName = member ? member.displayName : target.username;
+    let serverName = target.username;
+
+    if (interaction.guild) {
+      const member = interaction.guild.members.cache.get(target.id);
+      if (member) serverName = member.displayName;
+    }
 
     const embed = new EmbedBuilder()
       .setColor(0x8B5A2B)
       .setTitle(`${serverName}の記録`)
       .setThumbnail(client.user.displayAvatarURL())
       .setDescription(
-`**和紙を呼び出した回数**
+        `**和紙を呼び出した回数**
 **${data.mention}**回
 
 **和紙が応じた回数**
@@ -70,166 +116,265 @@ async function handleInteraction(interaction, client) {
     return interaction.editReply({ embeds: [embed] });
   }
 
-  // 2. rank コマンドの修正
+  // 2. rank コマンド
   if (commandName === 'rank') {
     await interaction.deferReply();
-    const stats = (await getAllStats()) || {}; // 👈 これを追加！
 
-    const ranking = Object.values(stats).sort((a, b) => b.mention - a.mention).slice(0, 5);
-    const total = Object.values(stats).reduce((sum, u) => sum + u.mention, 0);
-    const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+    const stats = (await getAllStats()) || {};
+
+    const ranking = Object.values(stats)
+      .sort((a, b) => b.mention - a.mention)
+      .slice(0, 5);
+
+    const total = Object.values(stats).reduce(
+      (sum, u) => sum + u.mention,
+      0
+    );
+
+    const medals = ['🥇', '🥈', '🥉', '🏅', '🏅'];
+
     let text = `累計 **${total}**回 和紙を呼び出したのだ\n\n`;
 
     for (let i = 0; i < ranking.length; i++) {
       const u = ranking[i];
+
       let displayName = u.name;
-      try {
-        const member = await interaction.guild.members.fetch(u.id);
-        if (member) displayName = member.displayName;
-      } catch (err) {}
+
+      if (interaction.guild) {
+        try {
+          const member = await interaction.guild.members.fetch(u.id);
+          if (member) displayName = member.displayName;
+        } catch (err) {}
+      }
+
       text += `**${medals[i]} 第${i + 1}位：${u.mention}回**\n${displayName}\n\n`;
     }
 
     const embed = new EmbedBuilder()
       .setColor(0x8B5A2B)
-      .setTitle("和紙を呼び出したランキング")
+      .setTitle('和紙を呼び出したランキング')
       .setThumbnail(client.user.displayAvatarURL())
       .setDescription(text)
-      .setFooter({ text: "…もっと和紙を呼び出すのだ" });
+      .setFooter({
+        text: '…もっと和紙を呼び出すのだ'
+      });
 
     return interaction.editReply({ embeds: [embed] });
   }
 
-  // 3. luck コマンドの修正
+  // 3. luck コマンド
   if (commandName === 'luck') {
     await interaction.deferReply();
-    const stats = (await getAllStats()) || {}; // 👈 これを追加！
 
-    const ranking = Object.values(stats).sort((a, b) => b.lucky - a.lucky).filter(u => u.lucky > 0).slice(0, 5);
-    const total = Object.values(stats).reduce((sum, u) => sum + u.lucky, 0);
-    const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+    const stats = (await getAllStats()) || {};
+
+    const ranking = Object.values(stats)
+      .sort((a, b) => b.lucky - a.lucky)
+      .filter(u => u.lucky > 0)
+      .slice(0, 5);
+
+    const total = Object.values(stats).reduce(
+      (sum, u) => sum + u.lucky,
+      0
+    );
+
+    const medals = ['🥇', '🥈', '🥉', '🏅', '🏅'];
+
     let text = `累計 **${total}**回 和紙が応じてあげたのだ\n\n`;
 
     for (let i = 0; i < ranking.length; i++) {
       const u = ranking[i];
+
       let displayName = u.name;
-      try {
-        const member = await interaction.guild.members.fetch(u.id);
-        if (member) displayName = member.displayName;
-      } catch (err) {}
+
+      if (interaction.guild) {
+        try {
+          const member = await interaction.guild.members.fetch(u.id);
+          if (member) displayName = member.displayName;
+        } catch (err) {}
+      }
+
       text += `**${medals[i]} 第${i + 1}位：${u.lucky}回**\n${displayName}\n\n`;
     }
 
     const embed = new EmbedBuilder()
       .setColor(0x8B5A2B)
-      .setTitle("和紙が応じたランキング")
+      .setTitle('和紙が応じたランキング')
       .setThumbnail(client.user.displayAvatarURL())
       .setDescription(text)
-      .setFooter({ text: "…日頃の行いが足りないのだ" });
+      .setFooter({
+        text: '…日頃の行いが足りないのだ'
+      });
 
     return interaction.editReply({ embeds: [embed] });
   }
 
-
+  // tomato
   if (commandName === 'tomato') {
-    const reply = replyData.tomatoReplies[Math.floor(Math.random() * replyData.tomatoReplies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('tomatoReplies')
+    });
   }
 
+  // kiwi
   if (commandName === 'kiwi') {
-    return interaction.reply({ content: 'きぅいくってー\nあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww' });
+    return interaction.reply({
+      content: 'きぅいくってー\nあげりしゃすーwwwあげりしゃすーwww\nあげあげりしゃすーwww\nきぶんをあげるでりしゃすなきぅいーwww\nあげりしゃすーwww\nあげあげりしゃすーwww'
+    });
   }
 
+  // asa
   if (commandName === 'asa') {
-    return interaction.reply({ content: 'あーたーらしーいーあーさがっきったwww\nきぼーおのっあーさーだwww\nよろこーびにむねをひーらけwww\nおーぞーらあーおーげーwww\nらーじおーのーこーえにーwww\nすこやーかなーむーねをーwww\nこのかっおーるかっぜーにひらーけよwww\nそれいっちにっさーんwwwww' });
+    return interaction.reply({
+      content: 'あーたーらしーいーあーさがっきったwww\nきぼーおのっあーさーだwww\nよろこーびにむねをひーらけwww\nおーぞーらあーおーげーwww\nらーじおーのーこーえにーwww\nすこやーかなーむーねをーwww\nこのかっおーるかっぜーにひらーけよwww\nそれいっちにっさーんwwwww'
+    });
   }
 
+  // ao
   if (commandName === 'ao') {
-    const reply = replyData.aoReplies[Math.floor(Math.random() * replyData.aoReplies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('aoReplies')
+    });
   }
-  
+
+  // all
   if (commandName === 'all') {
-    const reply = replyData.replies[Math.floor(Math.random() * replyData.replies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('replies')
+    });
   }
-  
+
+  // wappa
   if (commandName === 'wappa') {
-    const reply = replyData.adaReplies[Math.floor(Math.random() * replyData.adaReplies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('adaReplies')
+    });
   }
 
+  // mgm
   if (commandName === 'mgm') {
-    const reply = replyData.megamiReplies[Math.floor(Math.random() * replyData.megamiReplies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('megamiReplies')
+    });
   }
 
+  // cpc
   if (commandName === 'cpc') {
-    const reply = replyData.helloReplies[Math.floor(Math.random() * replyData.helloReplies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('helloReplies')
+    });
   }
 
+  // gal_tomato
   if (commandName === 'gal_tomato') {
+    // 1%の確率で真・最終話
     if (Math.random() < 0.01) {
-      await interaction.reply({ content: `真・最終話 童帝\n???「童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい」\n\n全てを失ったジェヨンの元に、どこからともなく、一人の老人がジェヨンの前へ静かに降り立った。\n\n???「…もう一度、やり直す覚悟は…お有りかしら？」\n\nジェヨンは目を見開く。\n\n「あ、貴方は…」\n\n老人は穏やかに微笑み、こう言った。\n\n「和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ」\n\nそう言うと、老人は指を鳴らした。\n\n次の瞬間、世界がきしむような音を立て、時間そのものが逆行を始める。\n\n???「あ、和紙はレズもせーへきにはなりません」\n\nそんなことを話している間に時間逆行は完了し\n気がつくと俺は、トマトと幸せに暮らしていたあの頃へ戻っていた。\n\n???「他者への幸福を邪魔する様な気持ちも捨てれる事こそが童帝の第一歩なのです」\n\nそして少しだけ表情を険しくし、静かに続けた。\n\n「……その幸せを邪魔するような不届き者は――」\n\n老人は再び指を鳴らし、不敵に笑う。\n\n???「…和紙が犯す」` });
+      await interaction.reply({
+        content: `真・最終話 童帝
+???「童帝と名乗るのは求める事すら捨てた者達のみ、邪念が有るなら消し去る事を極めてから申しなさい」
+
+全てを失ったジェヨンの元に、どこからともなく、一人の老人がジェヨンの前へ静かに降り立った。
+
+???「…もう一度、やり直す覚悟は…お有りかしら？」
+
+ジェヨンは目を見開く。
+
+「あ、貴方は…」
+
+老人は穏やかに微笑み、こう言った。
+
+「和紙は生涯童帝を誓った漢,崩せる様な人は相当な人格者で無いと無理よ」
+
+そう言うと、老人は指を鳴らした。
+
+次の瞬間、世界がきしむような音を立て、時間そのものが逆行を始める。
+
+???「あ、和紙はレズもせーへきにはなりません」
+
+そんなことを話している間に時間逆行は完了し
+気がつくと俺は、トマトと幸せに暮らしていたあの頃へ戻っていた。
+
+???「他者への幸福を邪魔する様な気持ちも捨てれる事こそが童帝の第一歩なのです」
+
+そして少しだけ表情を険しくし、静かに続けた。
+
+「……その幸せを邪魔するような不届き者は――」
+
+老人は再び指を鳴らし、不敵に笑う。
+
+???「…和紙が犯す」`
+      });
 
       setTimeout(() => {
         interaction.deleteReply().catch(() => {});
       }, 30000);
+
       return;
     }
 
-    const reply = replyData.gyarutomatoReplies[Math.floor(Math.random() * replyData.gyarutomatoReplies.length)];
-    return interaction.reply({ content: reply });
+    return interaction.reply({
+      content: await getRandomReply('gyarutomatoReplies')
+    });
   }
 
-  // 記憶追加用コマンドの一括処理
-  const addCommands = ['addall', 'addwappa', 'addtomato', 'addao', 'addcpc', 'addmgm', 'addgal_tomato'];
+  // 記憶追加用コマンド
+  const addCommands = {
+    addall: {
+      category: 'replies',
+      name: '全体（all）'
+    },
+    addwappa: {
+      category: 'adaReplies',
+      name: '和紙（wappa）'
+    },
+    addtomato: {
+      category: 'tomatoReplies',
+      name: '的トマト（tomato）'
+    },
+    addao: {
+      category: 'aoReplies',
+      name: 'あお（ao）'
+    },
+    addcpc: {
+      category: 'helloReplies',
+      name: 'カートゥーンポテチ（cpc）'
+    },
+    addmgm: {
+      category: 'megamiReplies',
+      name: '女神（mgm）'
+    },
+    addgal_tomato: {
+      category: 'gyarutomatoReplies',
+      name: 'ギャルトマト列伝（gal_tomato）'
+    }
+  };
 
-  if (addCommands.includes(commandName)) {
+  const addCommand = addCommands[commandName];
+
+  if (addCommand) {
     const allowedUsers = ['768022305279574067'];
 
     if (!allowedUsers.includes(interaction.user.id)) {
-      return interaction.reply({ 
-        content: '…貴方に和紙の記憶を弄る素質がないんだにょwww 出直してくるのだ', 
-        ephemeral: true 
+      return interaction.reply({
+        content: '…貴方に和紙の記憶を弄る素質がないんだにょwww 出直してくるのだ',
+        ephemeral: true
       });
     }
 
     const newWord = interaction.options.getString('word');
-    let targetName = '';
 
-    if (commandName === 'addall') {
-      replyData.replies.push(newWord);
-      targetName = '全体（all）';
-      
-    } else if (commandName === 'addmgm') {
-      replyData.megamiReplies.push(newWord);
-      targetName = '女神（mgm）';
-      
-    } else if (commandName === 'addwappa') {
-      replyData.adaReplies.push(newWord);
-      targetName = '和紙（wappa）';
-      
-    } else if (commandName === 'addtomato') {
-      replyData.tomatoReplies.push(newWord);
-      targetName = '的トマト（tomato）';
-      
-    } else if (commandName === 'addao') {
-      replyData.aoReplies.push(newWord);
-      targetName = 'あお（ao）';
-      
-    } else if (commandName === 'addcpc') {
-      replyData.helloReplies.push(newWord);
-      targetName = 'カートゥーンポテチ（cpc）';
-      
-    } else if (commandName === 'addgal_tomato') {
-      replyData.gyarutomatoReplies.push(newWord);
-      targetName = 'ギャルトマト列伝（gal_tomato）';
+    if (!newWord || !newWord.trim()) {
+      return interaction.reply({
+        content: '…空っぽの記憶は刻めないのだ',
+        ephemeral: true
+      });
     }
 
-    return interaction.reply({ 
-      content: `…「${newWord}」を和紙の【${targetName}】の記憶に刻んだのだ。次から喋るかもしれないのだ` 
+    // MongoDBに保存
+    await addCustomReply(addCommand.category, newWord);
+
+    return interaction.reply({
+      content: `…「${newWord}」を和紙の【${addCommand.name}】の記憶に刻んだのだ。次から喋るかもしれないのだ`
     });
   }
 }
