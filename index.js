@@ -13,7 +13,11 @@ const handleInteraction = require('./handlers/interactionHandler');
 
 // --- 🌐 Webサーバー起動（Render対策） ---
 const app = express();
-app.get('/', (req, res) => res.send('Bot is running!'));
+
+app.get('/', (req, res) => {
+  res.send('Bot is running!');
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log('Web server started');
 });
@@ -39,7 +43,6 @@ process.on('unhandledRejection', (error) => {
 
 // Bot起動イベント
 client.once('ready', async () => {
-  await connectDB();
   console.log('Bot起動！');
 
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
@@ -49,6 +52,7 @@ client.once('ready', async () => {
       Routes.applicationCommands(client.user.id),
       { body: commands }
     );
+
     console.log('スラッシュコマンド登録完了');
   } catch (err) {
     console.error('スラッシュコマンド登録失敗:', err);
@@ -56,8 +60,32 @@ client.once('ready', async () => {
 });
 
 // イベント割り当て
-client.on('messageCreate', (message) => handleMessage(message, client));
-client.on('interactionCreate', (interaction) => handleInteraction(interaction, client));
+client.on('messageCreate', (message) => {
+  handleMessage(message, client).catch((error) => {
+    console.error('メッセージ処理エラー:', error);
+  });
+});
 
-// ログイン
-client.login(process.env.TOKEN);
+client.on('interactionCreate', (interaction) => {
+  handleInteraction(interaction, client).catch((error) => {
+    console.error('インタラクション処理エラー:', error);
+  });
+});
+
+// --- Bot起動 ---
+async function startBot() {
+  try {
+    // MongoDB接続を先に完了させる
+    await connectDB();
+    console.log('MongoDB接続完了');
+
+    // DB接続後にDiscordへログイン
+    await client.login(process.env.TOKEN);
+
+  } catch (error) {
+    console.error('Bot起動失敗:', error);
+    process.exit(1);
+  }
+}
+
+startBot();
