@@ -13,8 +13,6 @@ async function handleMessage(message, client) {
   // 🚫 出現除外チャンネルの場合は処理を中断
   if (await isChannelDisabled(message.channel.id)) return;
 
-  console.log(`チャンネル:${message.channel.name} ID:${message.channel.id}`);
-
   if (!message.guild) return;
 
   // ==========================================
