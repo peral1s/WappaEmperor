@@ -75,7 +75,12 @@ async function handleHarvest(interaction) {
       scannedCount += fetchedMessages.size;
 
       fetchedMessages.forEach(msg => {
-        if (!msg.author.bot && msg.author.id === targetUserId && msg.content.trim().length > 0) {
+        if (
+          collectedMsgs.length < targetCount &&
+          !msg.author.bot &&
+          msg.author.id === targetUserId &&
+          msg.content.trim().length > 0
+        ) {
           collectedMsgs.push(msg);
         }
       });
