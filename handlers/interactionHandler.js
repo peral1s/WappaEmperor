@@ -5,6 +5,7 @@ const {
   getAllStats,
   addDisabledChannel,
   addCustomReply,
+  removeCustomReply,
   getCustomReplies
 } = require('../db/database');
 
@@ -348,6 +349,52 @@ async function handleInteraction(interaction, client) {
       name: 'ギャルトマト列伝（gal_tomato）'
     }
   };
+
+  // 記憶削除用コマンド
+  const remCommands = {
+    remall: { category: 'replies', name: '全体（all）' },
+    remwappa: { category: 'adaReplies', name: '和紙（wappa）' },
+    remtomato: { category: 'tomatoReplies', name: '的トマト（tomato）' },
+    remao: { category: 'aoReplies', name: 'あお（ao）' },
+    remcpc: { category: 'helloReplies', name: 'カートゥーンポテチ（cpc）' },
+    remmgm: { category: 'megamiReplies', name: '女神（mgm）' },
+    remgal_tomato: { category: 'gyarutomatoReplies', name: 'ギャルトマト列伝（gal_tomato）' }
+  };
+
+  const remCommand = remCommands[commandName];
+
+  if (remCommand) {
+    const allowedUsers = ['768022305279574067'];
+
+    if (!allowedUsers.includes(interaction.user.id)) {
+      return interaction.reply({
+        content: '…貴方に和紙の記憶を弄る素質がないんだにょwww 出直してくるのだ',
+        ephemeral: true
+      });
+    }
+
+    const word = interaction.options.getString('word');
+
+    if (!word || !word.trim()) {
+      return interaction.reply({
+        content: '…空っぽの記憶は消せないのだ',
+        ephemeral: true
+      });
+    }
+
+    const deletedCount = await removeCustomReply(remCommand.category, word);
+
+    if (deletedCount === 0) {
+      return interaction.reply({
+        content: `…「${word}」は和紙の【${remCommand.name}】の記憶に見つからなかったのだ。`,
+        ephemeral: true
+      });
+    }
+
+    return interaction.reply({
+      content: `…「${word}」を和紙の【${remCommand.name}】の記憶から${deletedCount}件消したのだ。`
+    });
+  }
 
   const addCommand = addCommands[commandName];
 
