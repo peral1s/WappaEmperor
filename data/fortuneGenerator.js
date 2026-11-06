@@ -93,6 +93,23 @@ const loveTangents = [
   '……急に真面目な話をしてしまったな。'
 ];
 
+const rpgInvitations = [
+  'あ〜せや、和紙のRPGでもして、落ち着く？()',
+  'そーいや、貴方は和紙のRPGをやるという選択肢を忘れていませんかな？()',
+  'まぁ、気分転換も大事なのだ。和紙のRPGでもどうです？()',
+  'あ、そうだ。運勢がどうこう言う前に、和紙のRPGをやってみるのも一興ですぞ()',
+  'それはそうと、和紙のRPGの調子はどう？ ……いや、今聞くことではないか()',
+  'そ〜いやRPG得意？ いや、占いとは関係ないのだが()'
+];
+
+const footerTexts = [
+  '…貴方の幸福を願っているのだ',
+  '…まぁ、そういう日も有る',
+  '…あ〜…うん、そうねぇ',
+  '…和紙に任せなさい、全部解決したる。',
+  '…焦らずやっていくのですぞ'
+];
+
 function createFortune(isLove = false) {
   const result = pick(isLove ? loveFortunes : fortunes);
   const question = pick(isLove ? loveQuestions : questions);
@@ -104,11 +121,16 @@ function createFortune(isLove = false) {
     opening ? opening + question : question,
     advice,
     Math.random() < 0.65 ? tangent : null,
+    Math.random() < 0.30 ? pick(rpgInvitations) : null,
     closing
   ].filter(Boolean);
 
-  return '## ' + (isLove ? '恋みくじ' : '和紙のおみくじ') + '：' + result.name +
-    '\n\n' + result.message + '\n\n' + body.join('\n\n');
+  return {
+    title: (isLove ? '💗 恋みくじ：' : '⛩️ 和紙のおみくじ：') + result.name,
+    description: result.message + '\n\n' + body.join('\n\n'),
+    color: result.name === '大吉' ? 0xF1C40F :
+      result.name === '凶' ? 0xE74C3C : 0x8B5A2B,
+    footer: pick(footerTexts)
+  };
 }
-
 module.exports = { createFortune };
