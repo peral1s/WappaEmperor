@@ -46,7 +46,7 @@ async function handleHarvest(interaction) {
   }
 
   const targetUserId = targetUser.id;
-  const scanLimit = Math.min(interaction.options.getInteger('limit') || 1000, 5000);
+  const targetCount = Math.max(1, Math.min(interaction.options.getInteger('limit') || 1000, 5000));
   const format = interaction.options.getString('format') || 'log';
   const inputDate = interaction.options.getString('date');
   const channel = interaction.channel;
@@ -64,8 +64,8 @@ async function handleHarvest(interaction) {
   let scannedCount = 0;
 
   try {
-    while (scannedCount < scanLimit) {
-      const fetchAmount = Math.min(100, scanLimit - scannedCount);
+    while (collectedMsgs.length < targetCount) {
+      const fetchAmount = 100;
       const options = { limit: fetchAmount };
       if (lastMessageId) options.before = lastMessageId;
 
@@ -86,7 +86,7 @@ async function handleHarvest(interaction) {
     if (collectedMsgs.length === 0) {
       const startMsg = inputDate ? `**${inputDate}** の時点から ` : '';
       return interaction.editReply({ 
-        content: `…${startMsg}スキャンした **${scannedCount}** 件の中に、**${targetUser.username}**（ID: \`${targetUserId}\`）の発言は見つからなかったのだ` 
+        content: `…${startMsg}**${scannedCount}** 件を確認したけれど、**${targetUser.username}**（ID: \`${targetUserId}\`）の発言は見つからなかったのだ` 
       });
     }
 
@@ -115,7 +115,7 @@ async function handleHarvest(interaction) {
 
     const dateNotice = inputDate ? `（**${inputDate}** 時点から過去へ探索）` : '';
     return interaction.editReply({
-      content: `✅ **${scannedCount}** 件中${dateNotice}から、**${targetUser.username}** の発言 **${collectedMsgs.length}** 件を正常に抽出したのだ！`,
+      content: `✅ ${dateNotice} **${targetUser.username}** の発言を **${collectedMsgs.length}件** 抽出したのだ！（確認したメッセージ数：${scannedCount}件）`,
       files: [attachment]
     });
 
