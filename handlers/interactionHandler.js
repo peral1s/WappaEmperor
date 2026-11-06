@@ -14,6 +14,7 @@ const {
 
 const handleHarvest = require('./harvestHandler');
 const handleTarot = require('../data/tarot');
+const { createFortune } = require('../data/fortuneGenerator');
 
 // 返信カテゴリーと元データの対応
 const replyCategories = {
@@ -162,6 +163,12 @@ async function handleInteraction(interaction, client) {
   // タロット占い
   if (commandName === 'tarot') {
     return handleTarot(interaction, client);
+  }
+
+  // 和紙のおみくじ・恋みくじ（文章を毎回ランダム生成）
+  if (commandName === 'omikuji' || commandName === 'koimikuji') {
+    const isLove = commandName === 'koimikuji';
+    return interaction.reply({ content: createFortune(isLove) });
   }
 
   // 1. log コマンド
