@@ -66,6 +66,14 @@ const commands = [
          )
     ),
 
+  new SlashCommandBuilder().setName('remall').setDescription('…all（全体返信）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remmgm').setDescription('…mgm（女神）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remwappa').setDescription('…wappa（和紙）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remtomato').setDescription('…tomato（的トマト）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remao').setDescription('…ao（黒歴史）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remcpc').setDescription('…cpc（ポテチロボ）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remgal_tomato').setDescription('…gal_tomato（ギャルトマト列伝）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setRequired(true)),
+
   new SlashCommandBuilder().setName('addall').setDescription('…all（全体返信）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addmgm').setDescription('…mgm（女神）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addwappa').setDescription('…wappa（和紙）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
