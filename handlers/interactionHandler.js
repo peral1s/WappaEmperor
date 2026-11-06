@@ -182,7 +182,7 @@ async function handleInteraction(interaction, client) {
       .setColor(fortune.color)
       .setTitle(`🥠 ${interaction.user.username}の運勢`)
       .setThumbnail(avatarUrl)
-      .setDescription(`**${fortune.name}**\n\n${quotedDescription}`)
+      .setDescription(`# ${fortune.name}\n\n${quotedDescription}`)
       .setFooter({ text: fortune.footer });
 
     return interaction.reply({ embeds: [embed] });
