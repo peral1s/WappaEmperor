@@ -168,7 +168,18 @@ async function handleInteraction(interaction, client) {
   // 和紙のおみくじ・恋みくじ（文章を毎回ランダム生成）
   if (commandName === 'omikuji' || commandName === 'koimikuji') {
     const isLove = commandName === 'koimikuji';
-    return interaction.reply({ content: createFortune(isLove) });
+    const fortune = createFortune(isLove);
+    const avatarUrl = interaction.client?.user?.displayAvatarURL() ||
+      (client && client.user ? client.user.displayAvatarURL() : '');
+
+    const embed = new EmbedBuilder()
+      .setColor(fortune.color)
+      .setTitle(`${interaction.user.username} の${fortune.title}`)
+      .setThumbnail(avatarUrl)
+      .setDescription(fortune.description)
+      .setFooter({ text: fortune.footer });
+
+    return interaction.reply({ embeds: [embed] });
   }
 
   // 1. log コマンド
