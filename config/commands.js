@@ -52,7 +52,7 @@ const commands = [
     )
     .addIntegerOption(opt => 
       opt.setName('limit')
-         .setDescription('遡る最大メッセージ件数（デフォルト: 1000件 / 最大: 5000件）')
+         .setDescription('抽出する対象ユーザーの発言件数（デフォルト: 1000件 / 最大: 5000件）')
          .setRequired(false)
     )
     .addStringOption(opt =>
