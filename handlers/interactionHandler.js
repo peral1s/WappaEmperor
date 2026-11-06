@@ -165,18 +165,24 @@ async function handleInteraction(interaction, client) {
     return handleTarot(interaction, client);
   }
 
-  // 和紙のおみくじ・恋みくじ（文章を毎回ランダム生成）
+  // 和紙のおみくじ・恋みくじ
   if (commandName === 'omikuji' || commandName === 'koimikuji') {
     const isLove = commandName === 'koimikuji';
     const fortune = createFortune(isLove);
     const avatarUrl = interaction.client?.user?.displayAvatarURL() ||
       (client && client.user ? client.user.displayAvatarURL() : '');
 
+    // タイトル左端に絵文字を固定し、運勢名は太字、本文はタロット同様の引用線で表示
+    const quotedDescription = fortune.description
+      .split('\n\n')
+      .map(paragraph => `> ${paragraph.replace(/\n/g, '\n> ')}`)
+      .join('\n> \n');
+
     const embed = new EmbedBuilder()
       .setColor(fortune.color)
-      .setTitle(`${interaction.user.username} の${fortune.title}`)
+      .setTitle(`🥠 ${interaction.user.username}の運勢`)
       .setThumbnail(avatarUrl)
-      .setDescription(fortune.description)
+      .setDescription(`**${fortune.name}**\n\n${quotedDescription}`)
       .setFooter({ text: fortune.footer });
 
     return interaction.reply({ embeds: [embed] });
@@ -410,7 +416,7 @@ async function handleInteraction(interaction, client) {
 
 老人は再び指を鳴らし、不敵に笑う。
 
-???「…和紙が犯す」`
+???「…和紙が犯す`
       });
 
       setTimeout(() => {
