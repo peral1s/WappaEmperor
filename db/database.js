@@ -117,6 +117,17 @@ async function addCustomReply(category, text) {
   console.log(`カスタム返信追加: ${category} | ${text}`);
 }
 
+// カスタム返信削除（同じカテゴリー・文章の登録をすべて削除）
+async function removeCustomReply(category, text) {
+  if (!customRepliesCollection) {
+    throw new Error('MongoDBに接続されていません');
+  }
+
+  const result = await customRepliesCollection.deleteMany({ category, text });
+  console.log(`カスタム返信削除: ${category} | ${text} | deleted: ${result.deletedCount}`);
+  return result.deletedCount;
+}
+
 // カスタム返信取得
 async function getCustomReplies(category) {
   if (!customRepliesCollection) {
@@ -139,5 +150,6 @@ module.exports = {
   isChannelDisabled,
   removeDisabledChannel,
   addCustomReply,
+  removeCustomReply,
   getCustomReplies
 };
