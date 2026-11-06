@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const replyData = require('../data/replies');
 
 const {
@@ -6,7 +6,10 @@ const {
   addDisabledChannel,
   addCustomReply,
   removeCustomReply,
-  getCustomReplies
+  getCustomReplies,
+  removeCustomReplyForUndo,
+  createReplyUndoAction,
+  undoReplyAction
 } = require('../db/database');
 
 const handleHarvest = require('./harvestHandler');
@@ -42,7 +45,61 @@ async function getRandomReply(category) {
   return replies[Math.floor(Math.random() * replies.length)];
 }
 
+async function handleReplyButtons(interaction) {
+  const [action, token, ownerId] = interaction.customId.split(':');
+
+  if (action === 'reply_delete') {
+    if (interaction.user.id !== token) {
+      return interaction.reply({ content: 'この操作を実行した本人だけが使えるのだ。', ephemeral: true });
+    }
+    await interaction.deferUpdate();
+    return interaction.message.delete().catch(() => {});
+  }
+
+  if (action === 'reply_undo') {
+    if (interaction.user.id !== ownerId) {
+      return interaction.reply({ content: 'この操作を実行した本人だけが使えるのだ。', ephemeral: true });
+    }
+
+    const result = await undoReplyAction(token, ownerId);
+    if (!result) {
+      return interaction.reply({ content: '…この操作は既に取り消されたか、有効期限が切れているのだ。', ephemeral: true });
+    }
+
+    const deleteRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`reply_delete:${ownerId}`)
+        .setLabel('このメッセージを削除')
+        .setEmoji('🗑️')
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.update({
+      content: result === 'add'
+        ? '↩️ 追加した記憶を取り消したのだ。'
+        : '↩️ 削除した記憶を復元したのだ。',
+      components: [deleteRow]
+    });
+  }
+}
+
+function createReplyActionRow(token, userId) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`reply_undo:${token}:${userId}`)
+      .setLabel('操作を取り消す')
+      .setEmoji('↩️')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId(`reply_delete:${userId}`)
+      .setLabel('このメッセージを削除')
+      .setEmoji('🗑️')
+      .setStyle(ButtonStyle.Secondary)
+  );
+}
+
 async function handleInteraction(interaction, client) {
+  if (interaction.isButton()) return handleReplyButtons(interaction);
   // /rem... の入力候補をMongoDBから取得
   if (interaction.isAutocomplete()) {
     const autocompleteCategories = {
@@ -414,17 +471,19 @@ async function handleInteraction(interaction, client) {
       });
     }
 
-    const deletedCount = await removeCustomReply(remCommand.category, word);
+    const removedDocs = await removeCustomReplyForUndo(remCommand.category, word);
 
-    if (deletedCount === 0) {
+    if (removedDocs.length === 0) {
       return interaction.reply({
         content: `…「${word}」は和紙の【${remCommand.name}】の記憶に見つからなかったのだ。`,
         ephemeral: true
       });
     }
 
+    const token = await createReplyUndoAction(interaction.user.id, 'remove', removedDocs);
     return interaction.reply({
-      content: `…「${word}」を和紙の【${remCommand.name}】の記憶から${deletedCount}件消したのだ。`
+      content: `…「${word}」を和紙の【${remCommand.name}】の記憶から${removedDocs.length}件消したのだ。`,
+      components: [createReplyActionRow(token, interaction.user.id)]
     });
   }
 
@@ -449,11 +508,13 @@ async function handleInteraction(interaction, client) {
       });
     }
 
-    // MongoDBに保存
-    await addCustomReply(addCommand.category, newWord);
+    // MongoDBに保存し、取り消し用の情報も保存
+    const insertedDoc = await addCustomReply(addCommand.category, newWord);
+    const token = await createReplyUndoAction(interaction.user.id, 'add', [insertedDoc]);
 
     return interaction.reply({
-      content: `…「${newWord}」を和紙の【${addCommand.name}】の記憶に刻んだのだ。次から喋るかもしれないのだ`
+      content: `…「${newWord}」を和紙の【${addCommand.name}】の記憶に刻んだのだ。次から喋るかもしれないのだ`,
+      components: [createReplyActionRow(token, interaction.user.id)]
     });
   }
 }
