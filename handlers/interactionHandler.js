@@ -43,6 +43,38 @@ async function getRandomReply(category) {
 }
 
 async function handleInteraction(interaction, client) {
+  // /rem... の入力候補をMongoDBから取得
+  if (interaction.isAutocomplete()) {
+    const autocompleteCategories = {
+      remall: 'replies',
+      remwappa: 'adaReplies',
+      remtomato: 'tomatoReplies',
+      remao: 'aoReplies',
+      remcpc: 'helloReplies',
+      remmgm: 'megamiReplies',
+      remgal_tomato: 'gyarutomatoReplies'
+    };
+
+    const category = autocompleteCategories[interaction.commandName];
+    if (!category) return interaction.respond([]);
+
+    const allowedUsers = ['768022305279574067'];
+    if (!allowedUsers.includes(interaction.user.id)) {
+      return interaction.respond([]);
+    }
+
+    const focused = interaction.options.getFocused();
+    const customReplies = await getCustomReplies(category);
+    const normalized = focused.toLocaleLowerCase();
+    const choices = [...new Set(customReplies)]
+      .filter(word => word.toLocaleLowerCase().includes(normalized))
+      .filter(word => word.length <= 100)
+      .slice(0, 25)
+      .map(word => ({ name: word, value: word }));
+
+    return interaction.respond(choices);
+  }
+
   if (!interaction.isCommand()) return;
 
   const { commandName } = interaction;
