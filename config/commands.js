@@ -20,6 +20,8 @@ const commands = [
   new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
   new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史なのだ'),
   new SlashCommandBuilder().setName('tarot').setDescription('…和紙のタロット占いなのだ 結構マジで当たるのだ'),
+  new SlashCommandBuilder().setName('omikuji').setDescription('…和紙が毎回違う文章でおみくじを作るのだ'),
+  new SlashCommandBuilder().setName('koimikuji').setDescription('…和紙が恋みくじを作るのだ 恋愛相談も少々'),
 
   new SlashCommandBuilder().setName('all').setDescription('和紙の…歴史、なのだ'),
   new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
