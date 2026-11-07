@@ -15,6 +15,7 @@ const {
 const handleHarvest = require('./harvestHandler');
 const handleTarot = require('../data/tarot');
 const { createFortune } = require('../data/fortuneGenerator');
+const { handleHoroscope } = require('../data/horoscope');
 
 // 返信カテゴリーと元データの対応
 const replyCategories = {
@@ -163,6 +164,11 @@ async function handleInteraction(interaction, client) {
   // タロット占い
   if (commandName === 'tarot') {
     return handleTarot(interaction, client);
+  }
+
+  // 星座×血液型の今日の運勢
+  if (commandName === 'horoscope') {
+    return handleHoroscope(interaction);
   }
 
   // 和紙のおみくじ・恋みくじ
