@@ -2,10 +2,14 @@ const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const path = require('path');
 
 // Render環境にも日本語フォントを同梱して文字化けを防ぐ
-GlobalFonts.registerFromPath(
-  path.join(__dirname, '../node_modules/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff2'),
-  'Noto Sans JP'
+const japaneseFontPath = path.join(
+  __dirname,
+  '../node_modules/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff2'
 );
+const japaneseFontRegistered = GlobalFonts.registerFromPath(japaneseFontPath);
+if (!japaneseFontRegistered) {
+  console.error('日本語フォントの登録に失敗しました:', japaneseFontPath);
+}
 const { AttachmentBuilder } = require('discord.js');
 const { getLevelStats, getGuildLevelStats } = require('../db/database');
 
