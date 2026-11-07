@@ -34,7 +34,7 @@ async function handleMessage(message, client) {
         .find(role => role.name.toLocaleLowerCase() === roleName.toLocaleLowerCase());
 
       if (!targetRole || targetRole.id === message.guild.id) {
-        return message.reply(`むむ……「${roleName}」というロールは見つからなかったのだ。`);
+        return;
       }
 
       const botMember = await message.guild.members.fetch(client.user.id);
