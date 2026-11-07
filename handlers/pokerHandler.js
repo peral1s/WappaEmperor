@@ -82,6 +82,7 @@ async function startPoker(interaction) {
     hostId: interaction.user.id,
     players: [{ id: interaction.user.id, user: interaction.user, hand: [], selected: [], done: false }],
     phase: 'lobby',
+    round: 1,
     message: null
   };
 
@@ -117,10 +118,13 @@ function dmRows(game, player) {
 }
 
 async function sendHand(game, player) {
-  const embed = new EmbedBuilder().setColor(0x2E8B57).setTitle('🃏 貴方の手札').setDescription(
-    player.hand.map((card, i) => `**${i+1}.** ${cardText(card)}`).join('\n') +
-    '\n\n交換するカードを選んで「このカードで確定」を押すのだ。0枚交換なら何も選ばず確定！'
-  ).setFooter({ text: 'この手札は貴方にしか見えないのだ' });
+  const embed = new EmbedBuilder().setColor(0x2E8B57)
+    .setTitle(`🃏 貴方の手札（交換 ${game.round}/3回目）`)
+    .setDescription(
+      player.hand.map((card, i) => `**${i+1}.** ${cardText(card)}`).join('\n') +
+      '\n\n交換するカードを選んで「このカードで確定」を押すのだ。最大5枚、交換は合計3回まで！0枚交換も可能ぞい。'
+    )
+    .setFooter({ text: 'この手札は貴方にしか見えないのだ' });
   await player.user.send({ embeds: [embed], components: dmRows(game, player) });
 }
 
@@ -130,8 +134,9 @@ async function finishGame(game) {
     .sort((a,b) => compareHands(b.player.hand, a.player.hand));
   const best = sorted[0];
   const winners = sorted.filter(x => compareHands(x.player.hand, best.player.hand) === 0);
-  const lines = sorted.map((x, i) => `${winners.some(w=>w.player.id===x.player.id) ? '🏆' : '　'} **${i+1}位** <@${x.player.id}> — **${x.result.name}**（${x.player.hand.map(cardText).join(' ')}）`).join('\n');
-  const content = `🎉 **5カードドロー結果発表！**\n\n${lines}\n\n${winners.length > 1 ? '引き分けなのだ！' : `優勝は <@${winners[0].player.id}> なのだ！`}`;
+  const placeMarks = ['🥇', '🥈', '🥉', '❹', '❺', '❻'];
+  const lines = sorted.map((x, i) => `${placeMarks[i] || `❹`} <@${x.player.id}> — **${x.result.name}**（${x.player.hand.map(cardText).join(' ')}）`).join('\n');
+  const content = `🎉 **5カードドロー結果発表！**\n交換回数：${game.round}/3回\n\n${lines}\n\n${winners.length > 1 ? '引き分けなのだ！' : `優勝は <@${winners[0].player.id}> なのだ！`}\n\nそ〜いや、最後まで勝負を諦めぬとは見上げたものですぞ！……まぁ、次は和紙が勝つのだ。`;
   await game.message.edit({ content, components: [] }).catch(()=>{});
   for (const p of game.players) {
     p.user.send('ゲーム終了！対戦チャンネルで結果を確認するのだ。').catch(()=>{});
@@ -191,10 +196,28 @@ async function handlePokerInteraction(interaction) {
     for (const index of [...player.selected].sort((a,b)=>b-a)) player.hand.splice(index, 1);
     player.hand.push(...game.deck.splice(0, count));
     player.done = true;
-    await interaction.update({ content: `交換完了！新しい手札：**${player.hand.map(cardText).join(' ')}**\n結果発表まで待つのだ。`, embeds: [], components: [] });
+    await interaction.update({ content: `第${game.round}回目の交換完了！新しい手札：**${player.hand.map(cardText).join(' ')}**\n他の参加者の確定を待つのだ。`, embeds: [], components: [] });
     const done = game.players.filter(p=>p.done).length;
-    await game.message.edit({ content: `🃏 **交換中…**\n交換完了：${done}/${game.players.length}人\n全員が確定すると結果を発表するのだ！`, components: [] }).catch(()=>{});
-    if (done === game.players.length) return finishGame(game);
+    await game.message.edit({ content: `🃏 **第${game.round}/3回目の交換中…**\n交換完了：${done}/${game.players.length}人\n全員が確定すると次の交換に進むのだ！`, components: [] }).catch(()=>{});
+    if (done === game.players.length) {
+      if (game.round >= 3) return finishGame(game);
+      game.round += 1;
+      for (const p of game.players) {
+        p.done = false;
+        p.selected = [];
+      }
+      await game.message.edit({ content: `🃏 **第${game.round}/3回目の交換開始！**\n全員に新しい手札をDMで送ったのだ。今回も最大5枚まで交換できるぞい。\n交換完了：0/${game.players.length}人`, components: [] }).catch(()=>{});
+      for (const p of game.players) {
+        try {
+          await sendHand(game, p);
+        } catch {
+          game.phase = 'cancelled';
+          games.delete(game.id);
+          await interaction.followUp({ content: `<@${p.id}> に次の手札をDMで送れなかったため、ゲームを中止したのだ。` }).catch(()=>{});
+          return;
+        }
+      }
+    }
   }
 }
 
