@@ -16,6 +16,7 @@ const handleHarvest = require('./harvestHandler');
 const handleTarot = require('../data/tarot');
 const { createFortune } = require('../data/fortuneGenerator');
 const { handleHoroscope } = require('../data/horoscope');
+const { startPoker, handlePokerInteraction } = require('./pokerHandler');
 
 // 返信カテゴリーと元データの対応
 const replyCategories = {
@@ -101,6 +102,7 @@ function createReplyActionRow(token, userId) {
 }
 
 async function handleInteraction(interaction, client) {
+  if ((interaction.isButton() || interaction.isStringSelectMenu()) && interaction.customId.startsWith('poker_')) return handlePokerInteraction(interaction);
   if (interaction.isButton()) return handleReplyButtons(interaction);
   // /rem... の入力候補をMongoDBから取得
   if (interaction.isAutocomplete()) {
@@ -155,6 +157,9 @@ async function handleInteraction(interaction, client) {
       content: `…**<#${targetChannel.id}>** では今後和紙が出現しないように設定したのだ。…和紙、嫌われてるんかなぁ`
     });
   }
+
+  // 5カードドロー
+  if (commandName === 'poker') return startPoker(interaction);
 
   // 発言ログ抽出
   if (commandName === 'harvest') {
