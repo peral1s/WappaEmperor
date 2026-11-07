@@ -167,7 +167,7 @@ async function handleInteraction(interaction, client) {
   }
 
   // 星座×血液型の今日の運勢
-  if (commandName === 'horoscope') {
+  if (commandName === 'horo') {
     return handleHoroscope(interaction);
   }
 
