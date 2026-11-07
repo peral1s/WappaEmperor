@@ -19,6 +19,39 @@ const commands = [
   new SlashCommandBuilder().setName('kiwi').setDescription('…和紙がきぅいの歌を歌うのだ'),
   new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
   new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史なのだ'),
+  new SlashCommandBuilder()
+    .setName('horoscope')
+    .setDescription('…星座と血液型から今日の運勢を占うのだ')
+    .addStringOption(option =>
+      option.setName('zodiac')
+        .setDescription('貴方の星座を選ぶのだ')
+        .setRequired(true)
+        .addChoices(
+          { name: '♈ おひつじ座', value: 'おひつじ座' },
+          { name: '♉ おうし座', value: 'おうし座' },
+          { name: '♊ ふたご座', value: 'ふたご座' },
+          { name: '♋ かに座', value: 'かに座' },
+          { name: '♌ しし座', value: 'しし座' },
+          { name: '♍ おとめ座', value: 'おとめ座' },
+          { name: '♎ てんびん座', value: 'てんびん座' },
+          { name: '♏ さそり座', value: 'さそり座' },
+          { name: '♐ いて座', value: 'いて座' },
+          { name: '♑ やぎ座', value: 'やぎ座' },
+          { name: '♒ みずがめ座', value: 'みずがめ座' },
+          { name: '♓ うお座', value: 'うお座' }
+        )
+    )
+    .addStringOption(option =>
+      option.setName('blood')
+        .setDescription('貴方の血液型を選ぶのだ')
+        .setRequired(true)
+        .addChoices(
+          { name: 'A型', value: 'A型' },
+          { name: 'B型', value: 'B型' },
+          { name: 'O型', value: 'O型' },
+          { name: 'AB型', value: 'AB型' }
+        )
+    ),
   new SlashCommandBuilder().setName('tarot').setDescription('…和紙のタロット占いなのだ 結構マジで当たるのだ'),
   new SlashCommandBuilder().setName('omikuji').setDescription('…和紙が毎回違う文章でおみくじを作るのだ'),
   new SlashCommandBuilder().setName('koimikuji').setDescription('…和紙が恋みくじを作るのだ 恋愛相談も少々'),
