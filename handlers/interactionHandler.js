@@ -172,8 +172,8 @@ async function handleInteraction(interaction, client) {
   }
 
   // 和紙のおみくじ・恋みくじ
-  if (commandName === 'omikuji' || commandName === 'koimikuji') {
-    const isLove = commandName === 'koimikuji';
+  if (commandName === 'omikuji' || commandName === 'koi') {
+    const isLove = commandName === 'koi';
     const fortune = createFortune(isLove);
     const avatarUrl = interaction.client?.user?.displayAvatarURL() ||
       (client && client.user ? client.user.displayAvatarURL() : '');
@@ -186,7 +186,7 @@ async function handleInteraction(interaction, client) {
 
     const embed = new EmbedBuilder()
       .setColor(fortune.color)
-      .setTitle(`🥠 ${interaction.user.username}の運勢`)
+      .setTitle(`${isLove ? '💗' : '🥠'} ${interaction.user.username}の運勢`)
       .setThumbnail(avatarUrl)
       .setDescription(`# ${fortune.name}\n\n${quotedDescription}`)
       .setFooter({ text: fortune.footer });
