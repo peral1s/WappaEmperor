@@ -145,13 +145,32 @@ async function endVoiceSession(guildId, userId) {
 }
 
 async function getLevelStats(guildId, userId) {
-  return await levelStatsCollection.findOne({ _id: `${guildId}:${userId}` }) || {
+  const all = await getGuildLevelStats(guildId);
+  return all.find(item => item.userId === userId) || {
     guildId, userId, name: '', messages: 0, messageXp: 0, voiceSeconds: 0, voiceXp: 0
   };
 }
 
 async function getGuildLevelStats(guildId) {
-  return await levelStatsCollection.find({ guildId }).toArray();
+  const docs = await levelStatsCollection.find({ guildId }).toArray();
+  const byUser = new Map(docs.map(doc => [doc.userId, doc]));
+  const sessions = await voiceSessionsCollection.find({ guildId }).toArray();
+  const now = Date.now();
+
+  for (const session of sessions) {
+    const seconds = Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000));
+    const stats = byUser.get(session.userId) || {
+      guildId, userId: session.userId, name: session.username,
+      messages: 0, messageXp: 0, voiceSeconds: 0, voiceXp: 0
+    };
+    const previousSeconds = stats.voiceSeconds || 0;
+    stats.voiceSeconds = previousSeconds + seconds;
+    stats.voiceXp = (stats.voiceXp || 0)
+      + Math.floor(stats.voiceSeconds / 60) - Math.floor(previousSeconds / 60);
+    byUser.set(session.userId, stats);
+  }
+
+  return [...byUser.values()];
 }
 
 // 無効チャンネル追加
