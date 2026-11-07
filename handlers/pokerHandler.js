@@ -19,6 +19,22 @@ function makeDeck() {
   return deck;
 }
 
+function drawCards(game, count) {
+  const drawn = [];
+  while (drawn.length < count) {
+    if (game.deck.length === 0) {
+      game.deck = game.discard.splice(0);
+      for (let i = game.deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [game.deck[i], game.deck[j]] = [game.deck[j], game.deck[i]];
+      }
+    }
+    if (game.deck.length === 0) break;
+    drawn.push(game.deck.pop());
+  }
+  return drawn;
+}
+
 function evaluate(cards) {
   const values = cards.map(c => rankValue(c.rank)).sort((a,b) => b-a);
   const counts = new Map();
@@ -83,6 +99,7 @@ async function startPoker(interaction) {
     players: [{ id: interaction.user.id, user: interaction.user, hand: [], selected: [], done: false }],
     phase: 'lobby',
     round: 1,
+    discard: [],
     message: null
   };
 
@@ -167,6 +184,7 @@ async function handlePokerInteraction(interaction) {
     const deck = makeDeck();
     for (const p of game.players) p.hand = deck.splice(0, 5);
     game.deck = deck;
+    game.discard = [];
     game.phase = 'exchange';
     await interaction.update({ content: `🃏 **ゲーム開始！**\n参加者全員にDMで手札を送ったのだ。DMで交換するカードを選ぶのだ！\n交換完了：0/${game.players.length}`, components: [] });
     for (const p of game.players) {
@@ -193,8 +211,12 @@ async function handlePokerInteraction(interaction) {
     const player = game.players.find(p=>p.id===interaction.user.id);
     if (!player || player.done) return interaction.reply({ content: 'このゲームの参加者ではないか、既に確定済みなのだ。', ephemeral: true });
     const count = player.selected.length;
-    for (const index of [...player.selected].sort((a,b)=>b-a)) player.hand.splice(index, 1);
-    player.hand.push(...game.deck.splice(0, count));
+    const discarded = [];
+    for (const index of [...player.selected].sort((a,b)=>b-a)) {
+      discarded.push(player.hand.splice(index, 1)[0]);
+    }
+    game.discard.push(...discarded);
+    player.hand.push(...drawCards(game, count));
     player.done = true;
     await interaction.update({ content: `第${game.round}回目の交換完了！新しい手札：**${player.hand.map(cardText).join(' ')}**\n他の参加者の確定を待つのだ。`, embeds: [], components: [] });
     const done = game.players.filter(p=>p.done).length;
