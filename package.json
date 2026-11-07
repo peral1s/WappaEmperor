@@ -13,6 +13,7 @@
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "mongodb": "^6.13.0",
-    "@napi-rs/canvas": "^0.1.80"
+    "@napi-rs/canvas": "^0.1.80",
+    "@fontsource/noto-sans-jp": "^5.2.6"
   }
 }
