@@ -114,11 +114,18 @@ async function recordLevelMessage(guildId, userId, username) {
 
 async function startVoiceSession(guildId, userId, username, channelId) {
   const _id = `${guildId}:${userId}`;
-  await voiceSessionsCollection.updateOne(
+  const result = await voiceSessionsCollection.updateOne(
     { _id },
-    { $set: { guildId, userId, username, channelId, startedAt: new Date() } },
+    {
+      $setOnInsert: {
+        guildId, userId, username, channelId, startedAt: new Date()
+      }
+    },
     { upsert: true }
   );
+  if (result.upsertedCount > 0) {
+    console.log(`VCセッション開始保存: ${username} / ${channelId}`);
+  }
 }
 
 async function endVoiceSession(guildId, userId) {
@@ -142,6 +149,7 @@ async function endVoiceSession(guildId, userId) {
     },
     { upsert: true }
   );
+  console.log(`VC滞在時間保存: ${session.username} | ${seconds}秒 | +${xpGained} XP`);
 }
 
 async function getLevelStats(guildId, userId) {
