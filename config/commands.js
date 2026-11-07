@@ -62,13 +62,22 @@ const commands = [
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
 
-  // 🛑 出現無効化コマンド
+  // 🛑 出現無効化・再有効化コマンド
   new SlashCommandBuilder()
     .setName('leave')
     .setDescription('…指定したチャンネルで和紙が出現（応答）しないように設定するのだ')
     .addChannelOption(option =>
       option.setName('channel')
             .setDescription('出現を無効化したいチャンネル')
+            .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName('unleave')
+    .setDescription('…指定したチャンネルで再び和紙が出現（応答）するようにするのだ')
+    .addChannelOption(option =>
+      option.setName('channel')
+            .setDescription('出現を再び有効化したいチャンネル')
             .setRequired(true)
     ),
 
