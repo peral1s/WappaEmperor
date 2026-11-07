@@ -57,6 +57,24 @@ client.once('ready', async () => {
   } catch (err) {
     console.error('スラッシュコマンド登録失敗:', err);
   }
+
+  // Bot再起動時、すでにVCにいるメンバーのセッションも復元する
+  for (const guild of client.guilds.cache.values()) {
+    for (const state of guild.voiceStates.cache.values()) {
+      if (!state.channelId || !state.member || state.member.user.bot) continue;
+      try {
+        await startVoiceSession(
+          guild.id,
+          state.id,
+          state.member.displayName || state.member.user.username,
+          state.channelId
+        );
+        console.log(`VCセッション確認: ${state.member.user.username} / ${state.channelId}`);
+      } catch (error) {
+        console.error('VCセッション復元エラー:', error);
+      }
+    }
+  }
 });
 
 // イベント割り当て
@@ -78,6 +96,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     const newChannelId = newState.channelId;
 
     if (oldChannelId === newChannelId) return;
+
+    console.log(`VC状態変化: ${member.user.username} | ${oldChannelId || '未接続'} -> ${newChannelId || '退出'}`);
 
     if (oldChannelId) {
       await endVoiceSession(guildId, userId);
