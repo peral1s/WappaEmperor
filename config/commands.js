@@ -20,7 +20,7 @@ const commands = [
   new SlashCommandBuilder().setName('asa').setDescription('…忘れ去られし朝の歌を独唱するのだ'),
   new SlashCommandBuilder().setName('ao').setDescription('…あおの黒歴史なのだ'),
   new SlashCommandBuilder()
-    .setName('horoscope')
+    .setName('horo')
     .setDescription('…星座と血液型から今日の運勢を占うのだ')
     .addStringOption(option =>
       option.setName('zodiac')
