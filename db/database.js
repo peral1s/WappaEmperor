@@ -4,7 +4,9 @@ let mongo;
 let statsCollection;
 let disabledChannelsCollection;
 let customRepliesCollection;
-let replyUndoActionsCollection;\nlet levelStatsCollection;\nlet voiceSessionsCollection;
+let replyUndoActionsCollection;
+let levelStatsCollection;
+let voiceSessionsCollection;
 
 // MongoDB接続
 async function connectDB() {
@@ -24,7 +26,8 @@ async function connectDB() {
   statsCollection = db.collection('stats');
   disabledChannelsCollection = db.collection('disabledChannels');
   customRepliesCollection = db.collection('customReplies');
-  replyUndoActionsCollection = db.collection('replyUndoActions');\n
+  replyUndoActionsCollection = db.collection('replyUndoActions');
+
   levelStatsCollection = db.collection('levelStats');
   voiceSessionsCollection = db.collection('voiceSessions');
   await replyUndoActionsCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
@@ -127,12 +130,15 @@ async function endVoiceSession(guildId, userId) {
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(session.startedAt).getTime()) / 1000));
   if (seconds <= 0) return;
 
-  const minutes = Math.floor(seconds / 60);
+  const current = await levelStatsCollection.findOne({ _id });
+  const previousSeconds = current?.voiceSeconds || 0;
+  const xpGained = Math.floor((previousSeconds + seconds) / 60) - Math.floor(previousSeconds / 60);
+
   await levelStatsCollection.updateOne(
     { _id },
     {
       $set: { guildId, userId, name: session.username },
-      $inc: { voiceSeconds: seconds, voiceXp: minutes }
+      $inc: { voiceSeconds: seconds, voiceXp: xpGained }
     },
     { upsert: true }
   );
@@ -147,7 +153,8 @@ async function getLevelStats(guildId, userId) {
 async function getGuildLevelStats(guildId) {
   return await levelStatsCollection.find({ guildId }).toArray();
 }
-\n// 無効チャンネル追加
+
+// 無効チャンネル追加
 async function addDisabledChannel(channelId) {
   await disabledChannelsCollection.updateOne(
     { _id: channelId },
