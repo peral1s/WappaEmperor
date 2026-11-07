@@ -2,14 +2,32 @@
 const replyData = require('../data/replies');
 const {
   updateUserStats,
+  recordLevelMessage,
   isChannelDisabled,
   getCustomReplies
 } = require('../db/database');
 const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
+const { showLevel } = require('./levelHandler');
 
 async function handleMessage(message, client) {
   if (message.author.bot) return;
   if (!message.guild) return;
+
+  // レベル集計（メッセージ数は全件、経験値は1分に1回）
+  await recordLevelMessage(message.guild.id, message.author.id, message.member?.displayName || message.author.username);
+
+  // /level または /level @ユーザー でカードを表示
+  const levelCommand = message.content.trim().match(/^\/level(?:\s+<@!?(\d+)>)?$/);
+  if (levelCommand) {
+    let targetMember = message.member;
+    if (levelCommand[1]) {
+      targetMember = await message.guild.members.fetch(levelCommand[1]).catch(() => null);
+      if (!targetMember) {
+        return message.reply('…その者はこのサーバーに見当たらないのだ。');
+      }
+    }
+    return showLevel(message, targetMember);
+  }
 
   // ==========================================
   // メンションによるロール付与・剥奪（許可ユーザー限定）
