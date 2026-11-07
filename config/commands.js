@@ -56,6 +56,14 @@ const commands = [
   new SlashCommandBuilder().setName('omikuji').setDescription('…和紙が毎回違う文章でおみくじを作るのだ'),
   new SlashCommandBuilder().setName('koi').setDescription('…和紙が恋みくじを作るのだ 恋愛相談も少々'),
   new SlashCommandBuilder().setName('poker').setDescription('…みんなで5カードドローを遊ぶのだ'),
+  new SlashCommandBuilder()
+    .setName('level')
+    .setDescription('…メッセージとVCのレベルカードを見るのだ')
+    .addUserOption(option =>
+      option.setName('user')
+        .setDescription('レベルを確認したいユーザー')
+        .setRequired(false)
+    ),
 
   new SlashCommandBuilder().setName('all').setDescription('和紙の…歴史、なのだ'),
   new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
