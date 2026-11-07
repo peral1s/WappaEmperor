@@ -19,8 +19,8 @@ async function handleMessage(message, client) {
     '1286295306497032243'
   ];
 
-  // 「@ユーザー @ロール」の形式だけを対象にする
-  const roleMentionMatch = message.content.match(/^<@!?(\d+)>\s+<@&(\d+)>$/);
+  // 「@ユーザー ロール名」の形式を対象にする（ロールはメンション不要）
+  const roleMentionMatch = message.content.match(/^<@!?(\d+)>\s+(.+?)\s*$/);
 
   if (roleMentionMatch) {
     if (!allowedRoleManagers.includes(message.author.id)) {
@@ -29,10 +29,12 @@ async function handleMessage(message, client) {
 
     try {
       const targetMember = await message.guild.members.fetch(roleMentionMatch[1]);
-      const targetRole = await message.guild.roles.fetch(roleMentionMatch[2]);
+      const roleName = roleMentionMatch[2].trim();
+      const targetRole = (await message.guild.roles.fetch())
+        .find(role => role.name.toLocaleLowerCase() === roleName.toLocaleLowerCase());
 
       if (!targetRole || targetRole.id === message.guild.id) {
-        return message.reply('むむ……そのロールは見つからなかったのだ。');
+        return message.reply(`むむ……「${roleName}」というロールは見つからなかったのだ。`);
       }
 
       const botMember = await message.guild.members.fetch(client.user.id);
