@@ -17,7 +17,7 @@ function getLevel(xp = 0) {
 function formatDuration(seconds = 0) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  return hours > 0 ? \`\${hours}時間\${minutes}分\` : \`\${minutes}分\`;
+  return hours > 0 ? `${hours}時間${minutes}分` : `${minutes}分`;
 }
 
 function roundedRect(ctx, x, y, width, height, radius) {
@@ -94,9 +94,9 @@ async function createLevelCard(member, stats, allStats) {
 
     ctx.fillStyle = '#ffffff';
     ctx.font = '16px sans-serif';
-    ctx.fillText(\`Rank: #\${rank || '-'}\`, 455, y - 18);
+    ctx.fillText(`Rank: #${rank || '-'}`, 455, y - 18);
     ctx.textAlign = 'right';
-    ctx.fillText(\`Total: \${total.toLocaleString()}\`, 960, y - 18);
+    ctx.fillText(`Total: ${total.toLocaleString()}`, 960, y - 18);
     ctx.textAlign = 'left';
 
     ctx.fillStyle = '#514b60';
@@ -110,7 +110,7 @@ async function createLevelCard(member, stats, allStats) {
     ctx.fillStyle = '#ffffff';
     ctx.font = '17px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(\`\${level.current.toLocaleString()} / \${level.required.toLocaleString()} XP\`, 702, y + 19);
+    ctx.fillText(`${level.current.toLocaleString()} / ${level.required.toLocaleString()} XP`, 702, y + 19);
     ctx.textAlign = 'left';
   }
 
@@ -119,7 +119,7 @@ async function createLevelCard(member, stats, allStats) {
 
   ctx.fillStyle = '#d8d3e6';
   ctx.font = '15px sans-serif';
-  ctx.fillText(\`Messages: \${(stats.messages || 0).toLocaleString()}   |   Voice: \${formatDuration(stats.voiceSeconds || 0)}\`, 270, 370);
+  ctx.fillText(`Messages: ${(stats.messages || 0).toLocaleString()}   |   Voice: ${formatDuration(stats.voiceSeconds || 0)}`, 270, 370);
 
   return new AttachmentBuilder(await canvas.encode('png'), { name: 'level.png' });
 }
