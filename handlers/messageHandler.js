@@ -9,11 +9,62 @@ const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 
 async function handleMessage(message, client) {
   if (message.author.bot) return;
-
-  // 🚫 出現除外チャンネルの場合は処理を中断
-  if (await isChannelDisabled(message.channel.id)) return;
-
   if (!message.guild) return;
+
+  // ==========================================
+  // メンションによるロール付与・剥奪（許可ユーザー限定）
+  // ==========================================
+  const allowedRoleManagers = [
+    '768022305279574067',
+    '1286295306497032243'
+  ];
+
+  // 「@ユーザー @ロール」の形式だけを対象にする
+  const roleMentionMatch = message.content.match(/^<@!?(\d+)>\s+<@&(\d+)>$/);
+
+  if (roleMentionMatch) {
+    if (!allowedRoleManagers.includes(message.author.id)) {
+      return message.reply('素質がないんだにょwwwwwwww');
+    }
+
+    try {
+      const targetMember = await message.guild.members.fetch(roleMentionMatch[1]);
+      const targetRole = await message.guild.roles.fetch(roleMentionMatch[2]);
+
+      if (!targetRole || targetRole.id === message.guild.id) {
+        return message.reply('むむ……そのロールは見つからなかったのだ。');
+      }
+
+      const botMember = await message.guild.members.fetch(client.user.id);
+
+      if (
+        !botMember.permissions.has('ManageRoles') ||
+        targetRole.managed ||
+        targetRole.position >= botMember.roles.highest.position ||
+        targetMember.roles.highest.position >= botMember.roles.highest.position
+      ) {
+        return message.reply('むむ……そのロール、または相手には手が届かないのだ……。');
+      }
+
+      if (targetMember.roles.cache.has(targetRole.id)) {
+        await targetMember.roles.remove(targetRole);
+        return message.reply(
+          `……む、${targetMember.user.username} から「${targetRole.name}」を没収したぞい。`
+        );
+      }
+
+      await targetMember.roles.add(targetRole);
+      return message.reply(
+        `そ〜いや、${targetMember.user.username} に「${targetRole.name}」を授けておいたのだ！`
+      );
+    } catch (error) {
+      console.error('ロール付与・剥奪エラー:', error);
+      return message.reply('ありゃ……上手くいかなかったのだ。和紙にも原因が分からんぞい……。');
+    }
+  }
+
+  // 🚫 出現除外チャンネルの場合は通常の返信処理を中断
+  if (await isChannelDisabled(message.channel.id)) return;
 
   // ==========================================
   // ボイスチャンネル参加・退出機能
