@@ -68,6 +68,46 @@ const dailyMessages = [
   '貴方らしさを隠す必要はないぞい。そのままで進めばよいのだ。'
 ];
 
+
+const luckyItems = [
+  'お気に入りの飲み物', '青い小物', 'いつも使う筆記具', '小さな鏡',
+  '甘いお菓子', 'ハンカチ', 'イヤホン', '読みかけの本',
+  '腕時計', '温かい靴下', '透明なアクセサリー', '使い慣れた鞄'
+];
+
+function seededRandom(key) {
+  let seed = 2166136261;
+  for (const char of key) {
+    seed ^= char.charCodeAt(0);
+    seed = Math.imul(seed, 16777619);
+  }
+  return () => {
+    seed += 0x6D2B79F5;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function createDailyDetails(date, result) {
+  // 星座・血液型ごとに、その日一日固定の運勢を生成するのだ
+  const random = seededRandom(`${date}:${result.sign}:${result.blood}:details`);
+  const score = () => Math.floor(random() * 5) + 1;
+  const total = score();
+  const love = score();
+  const money = score();
+  const luckyItem = luckyItems[Math.floor(random() * luckyItems.length)];
+
+  return {
+    total,
+    love,
+    money,
+    luckyItem,
+    stars: value => '★'.repeat(value) + '☆'.repeat(5 - value)
+  };
+}
+
 function getJapanDate() {
   return new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Asia/Tokyo',
@@ -145,6 +185,8 @@ async function handleHoroscope(interaction) {
           ? '焦らずいこう'
           : '明日に期待なのだ';
 
+  const details = createDailyDetails(date, result);
+
   const embed = new EmbedBuilder()
     .setColor(rankColor)
     .setTitle('🔮 今日の星座×血液型占い')
@@ -153,7 +195,11 @@ async function handleHoroscope(interaction) {
       `# 第${result.rank}位\n` +
       `## ${result.emoji} ${result.sign} × ${result.blood}\n` +
       `**${rankLabel}**\n\n` +
-      `**💬 ゆーがのひと言**\n> ${result.message}`
+      `**🌟 総合運**　${details.stars(details.total)}\n` +
+      `**💗 恋愛運**　${details.stars(details.love)}\n` +
+      `**💰 金運**　　${details.stars(details.money)}\n` +
+      `**🍀 ラッキーアイテム**　${details.luckyItem}\n\n` +
+      `**📜 和紙からの天啓**\n> ${result.message}`
     )
     .setFooter({ text: '全48通りの日替わりランキングなのだ｜毎日0時（日本時間）更新' });
 
