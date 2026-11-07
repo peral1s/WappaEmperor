@@ -124,15 +124,41 @@ async function createLevelCard(member, stats, allStats) {
   return new AttachmentBuilder(await canvas.encode('png'), { name: 'level.png' });
 }
 
-async function showLevel(message, targetMember = message.member) {
-  await message.channel.sendTyping();
-  const [stats, allStats] = await Promise.all([
-    getLevelStats(message.guild.id, targetMember.id),
-    getGuildLevelStats(message.guild.id)
-  ]);
+async function showLevel(source, targetMember = source.member) {
+  const guild = source.guild;
+  if (!guild || !targetMember) {
+    const payload = { content: '…サーバー内で使うのだ。' };
+    return source.isChatInputCommand?.()
+      ? source.reply({ ...payload, ephemeral: true })
+      : source.reply(payload);
+  }
 
-  const card = await createLevelCard(targetMember, stats, allStats);
-  return message.reply({ files: [card], allowedMentions: { repliedUser: false } });
+  const isInteraction = typeof source.isChatInputCommand === 'function'
+    && source.isChatInputCommand();
+
+  if (isInteraction) {
+    await source.deferReply();
+  } else {
+    await source.channel.sendTyping();
+  }
+
+  try {
+    const [stats, allStats] = await Promise.all([
+      getLevelStats(guild.id, targetMember.id),
+      getGuildLevelStats(guild.id)
+    ]);
+
+    const card = await createLevelCard(targetMember, stats, allStats);
+    return isInteraction
+      ? source.editReply({ files: [card] })
+      : source.reply({ files: [card], allowedMentions: { repliedUser: false } });
+  } catch (error) {
+    console.error('レベルカード生成エラー:', error);
+    const payload = { content: '…レベルカードの生成に失敗したのだ。少し待ってから試すのだ。' };
+    return isInteraction
+      ? source.editReply(payload)
+      : source.reply(payload);
+  }
 }
 
 module.exports = { showLevel, getLevel };
