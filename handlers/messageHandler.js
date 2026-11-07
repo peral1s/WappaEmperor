@@ -13,8 +13,16 @@ async function handleMessage(message, client) {
   if (message.author.bot) return;
   if (!message.guild) return;
 
-  // レベル集計（メッセージ数は全件、経験値は1分に1回）
-  await recordLevelMessage(message.guild.id, message.author.id, message.member?.displayName || message.author.username);
+  // レベル集計に失敗しても、既存の返信・コマンド処理は止めない
+  try {
+    await recordLevelMessage(
+      message.guild.id,
+      message.author.id,
+      message.member?.displayName || message.author.username
+    );
+  } catch (error) {
+    console.error('メッセージ経験値の保存エラー:', error);
+  }
 
   // /level または /level @ユーザー でカードを表示
   const levelCommand = message.content.trim().match(/^\/level(?:\s+<@!?(\d+)>)?$/);
