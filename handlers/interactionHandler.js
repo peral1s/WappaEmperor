@@ -18,6 +18,7 @@ const handleTarot = require('../data/tarot');
 const { createFortune } = require('../data/fortuneGenerator');
 const { handleHoroscope } = require('../data/horoscope');
 const { startPoker, handlePokerInteraction } = require('./pokerHandler');
+const { showLevel } = require('./levelHandler');
 
 // 返信カテゴリーと元データの対応
 const replyCategories = {
@@ -175,6 +176,19 @@ async function handleInteraction(interaction, client) {
     return interaction.reply({
       content: `…**<#${targetChannel.id}>** で再び和紙が出現するように設定したのだ！`
     });
+  }
+
+  // レベルカード
+  if (commandName === 'level') {
+    if (!interaction.guild) {
+      return interaction.reply({ content: '…サーバー内で使うのだ。', ephemeral: true });
+    }
+    const targetUser = interaction.options.getUser('user') || interaction.user;
+    const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+    if (!targetMember) {
+      return interaction.reply({ content: '…その者はこのサーバーに見当たらないのだ。', ephemeral: true });
+    }
+    return showLevel(interaction, targetMember);
   }
 
   // 5カードドロー
