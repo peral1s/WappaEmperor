@@ -154,7 +154,7 @@ async function finishGame(game) {
   const placeMarks = ['🥇', '🥈', '🥉', '❹', '❺', '❻'];
   const lines = sorted.map((x, i) => `${placeMarks[i] || `❹`} <@${x.player.id}> — **${x.result.name}**（${x.player.hand.map(cardText).join(' ')}）`).join('\n');
   const content = `🎉 **5カードドロー結果発表！**\n交換回数：${game.round}/3回\n\n${lines}\n\n${winners.length > 1 ? '引き分けなのだ！' : `優勝は <@${winners[0].player.id}> なのだ！`}\n\nそ〜いや、最後まで勝負を諦めぬとは見上げたものですぞ！……まぁ、次は和紙が勝つのだ。`;
-  await game.message.edit({ content, components: [] }).catch(()=>{});
+  await game.message.channel.send({ content });
   for (const p of game.players) {
     p.user.send('ゲーム終了！対戦チャンネルで結果を確認するのだ。').catch(()=>{});
   }
