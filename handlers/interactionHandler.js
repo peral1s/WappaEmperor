@@ -4,6 +4,7 @@ const replyData = require('../data/replies');
 const {
   getAllStats,
   addDisabledChannel,
+  removeDisabledChannel,
   addCustomReply,
   removeCustomReply,
   getCustomReplies,
@@ -155,6 +156,24 @@ async function handleInteraction(interaction, client) {
 
     return interaction.reply({
       content: `…**<#${targetChannel.id}>** では今後和紙が出現しないように設定したのだ。…和紙、嫌われてるんかなぁ`
+    });
+  }
+
+  // 🟢 出現再有効化コマンド (/unleave)
+  if (commandName === 'unleave') {
+    const targetChannel = interaction.options.getChannel('channel');
+
+    if (!targetChannel) {
+      return interaction.reply({
+        content: '…チャンネルを指定するのだ',
+        ephemeral: true
+      });
+    }
+
+    await removeDisabledChannel(targetChannel.id);
+
+    return interaction.reply({
+      content: `…**<#${targetChannel.id}>** で再び和紙が出現するように設定したのだ！`
     });
   }
 
