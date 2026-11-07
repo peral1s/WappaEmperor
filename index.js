@@ -6,7 +6,7 @@ if (!process.env.TOKEN) {
 
 const express = require('express');
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { connectDB } = require('./db/database');
+const { connectDB, startVoiceSession, endVoiceSession } = require('./db/database');
 const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
@@ -64,6 +64,36 @@ client.on('messageCreate', (message) => {
   handleMessage(message, client).catch((error) => {
     console.error('メッセージ処理エラー:', error);
   });
+});
+
+// VC滞在時間の集計
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  try {
+    const member = newState.member || oldState.member;
+    if (!member || member.user.bot) return;
+
+    const guildId = newState.guild.id;
+    const userId = member.id;
+    const oldChannelId = oldState.channelId;
+    const newChannelId = newState.channelId;
+
+    if (oldChannelId === newChannelId) return;
+
+    if (oldChannelId) {
+      await endVoiceSession(guildId, userId);
+    }
+
+    if (newChannelId) {
+      await startVoiceSession(
+        guildId,
+        userId,
+        member.displayName || member.user.username,
+        newChannelId
+      );
+    }
+  } catch (error) {
+    console.error('VC滞在時間の集計エラー:', error);
+  }
 });
 
 client.on('interactionCreate', (interaction) => {
