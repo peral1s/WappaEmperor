@@ -65,13 +65,37 @@ function lobbyText(game) {
 }
 
 async function startPoker(interaction) {
-  if (!interaction.guild) return interaction.reply({ content: 'サーバーのチャンネルで開始してほしいのだ。', ephemeral: true });
+  // 先に応答を確定させ、Discordの3秒タイムアウトを防ぐ
+  if (!interaction.deferred && !interaction.replied) {
+    await interaction.deferReply();
+  }
+
+  if (!interaction.guild) {
+    return interaction.editReply({ content: 'サーバーのチャンネルで開始してほしいのだ。' });
+  }
+
   const id = interaction.id;
-  const game = { id, guildId: interaction.guildId, channelId: interaction.channelId, hostId: interaction.user.id,
-    players: [{ id: interaction.user.id, user: interaction.user, hand: [], selected: [], done: false }], phase: 'lobby', message: null };
+  const game = {
+    id,
+    guildId: interaction.guildId,
+    channelId: interaction.channelId,
+    hostId: interaction.user.id,
+    players: [{ id: interaction.user.id, user: interaction.user, hand: [], selected: [], done: false }],
+    phase: 'lobby',
+    message: null
+  };
+
   games.set(id, game);
-  const message = await interaction.reply({ content: lobbyText(game), components: lobbyComponents(id, game.hostId), fetchReply: true });
-  game.message = message;
+
+  try {
+    game.message = await interaction.editReply({
+      content: lobbyText(game),
+      components: lobbyComponents(id, game.hostId)
+    });
+  } catch (error) {
+    games.delete(id);
+    throw error;
+  }
 }
 
 async function updateLobby(game) {
