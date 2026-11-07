@@ -1,15 +1,4 @@
-const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
-const path = require('path');
-
-// Render環境にも日本語フォントを同梱して文字化けを防ぐ
-const japaneseFontPath = path.join(
-  __dirname,
-  '../node_modules/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff2'
-);
-const japaneseFontRegistered = GlobalFonts.registerFromPath(japaneseFontPath);
-if (!japaneseFontRegistered) {
-  console.error('日本語フォントの登録に失敗しました:', japaneseFontPath);
-}
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const { AttachmentBuilder } = require('discord.js');
 const { getLevelStats, getGuildLevelStats } = require('../db/database');
 
@@ -75,10 +64,11 @@ async function createLevelCard(member, stats, allStats) {
   ctx.stroke();
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 48px "Noto Sans JP", sans-serif';
-  ctx.fillText(member.displayName || member.user.username, 270, 92, 680);
+  ctx.font = 'bold 48px sans-serif';
+  // Discordの表示名ではなく、英数字のユーザー名（例: ._pera）を表示する
+  ctx.fillText(member.user.username, 270, 92, 680);
   ctx.fillStyle = '#c9c2dc';
-  ctx.font = '22px "Noto Sans JP", sans-serif';
+  ctx.font = '22px sans-serif';
   ctx.fillText('SERVER LEVEL CARD', 273, 128);
 
   const messageXp = stats.messageXp || 0;
@@ -93,18 +83,18 @@ async function createLevelCard(member, stats, allStats) {
 
   function drawBar(y, icon, label, level, rank, total, colorA, colorB) {
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px "Noto Sans JP", sans-serif';
+    ctx.font = 'bold 20px sans-serif';
     ctx.fillText(icon, 270, y + 8);
-    ctx.font = 'bold 17px "Noto Sans JP", sans-serif';
+    ctx.font = 'bold 17px sans-serif';
     ctx.fillText(label, 315, y - 18);
-    ctx.font = 'bold 30px "Noto Sans JP", sans-serif';
+    ctx.font = 'bold 30px sans-serif';
     ctx.fillText(String(level.level), 315, y + 20);
-    ctx.font = '16px "Noto Sans JP", sans-serif';
+    ctx.font = '16px sans-serif';
     ctx.fillStyle = '#d8d3e6';
     ctx.fillText('LVL', 315, y - 2);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '16px "Noto Sans JP", sans-serif';
+    ctx.font = '16px sans-serif';
     ctx.fillText(`Rank: #${rank || '-'}`, 455, y - 18);
     ctx.textAlign = 'right';
     ctx.fillText(`Total: ${total.toLocaleString()}`, 960, y - 18);
@@ -119,7 +109,7 @@ async function createLevelCard(member, stats, allStats) {
     if (level.progress > 0) roundedRect(ctx, 449, y, 507 * level.progress, 31, 15);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '17px "Noto Sans JP", sans-serif';
+    ctx.font = '17px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`${level.current.toLocaleString()} / ${level.required.toLocaleString()} XP`, 702, y + 19);
     ctx.textAlign = 'left';
@@ -129,7 +119,7 @@ async function createLevelCard(member, stats, allStats) {
   drawBar(300, '♫', 'VOICE LEVEL', voiceLevel, voiceRank, voiceXp, '#3b9fff', '#52e0d0');
 
   ctx.fillStyle = '#d8d3e6';
-  ctx.font = '15px "Noto Sans JP", sans-serif';
+  ctx.font = '15px sans-serif';
   ctx.fillText(`Messages: ${(stats.messages || 0).toLocaleString()}   |   Voice: ${formatDuration(stats.voiceSeconds || 0)}`, 270, 370);
 
   return new AttachmentBuilder(await canvas.encode('png'), { name: 'level.png' });
