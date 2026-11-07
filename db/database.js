@@ -4,7 +4,7 @@ let mongo;
 let statsCollection;
 let disabledChannelsCollection;
 let customRepliesCollection;
-let replyUndoActionsCollection;
+let replyUndoActionsCollection;\nlet levelStatsCollection;\nlet voiceSessionsCollection;
 
 // MongoDB接続
 async function connectDB() {
@@ -24,7 +24,9 @@ async function connectDB() {
   statsCollection = db.collection('stats');
   disabledChannelsCollection = db.collection('disabledChannels');
   customRepliesCollection = db.collection('customReplies');
-  replyUndoActionsCollection = db.collection('replyUndoActions');
+  replyUndoActionsCollection = db.collection('replyUndoActions');\n
+  levelStatsCollection = db.collection('levelStats');
+  voiceSessionsCollection = db.collection('voiceSessions');
   await replyUndoActionsCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
   console.log('MongoDB接続完了');
@@ -78,7 +80,74 @@ async function updateUserStats(userId, username, statsType) {
   );
 }
 
-// 無効チャンネル追加
+
+
+// ==========================================
+// レベル統計（サーバーごと）
+// ==========================================
+async function recordLevelMessage(guildId, userId, username) {
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - 60 * 1000);
+  const _id = `${guildId}:${userId}`;
+
+  await levelStatsCollection.updateOne(
+    { _id },
+    { $set: { guildId, userId, name: username }, $inc: { messages: 1 } },
+    { upsert: true }
+  );
+
+  // 連投しても経験値は1分に1回だけ加算
+  await levelStatsCollection.updateOne(
+    {
+      _id,
+      $or: [
+        { lastMessageXpAt: { $exists: false } },
+        { lastMessageXpAt: { $lte: cutoff } }
+      ]
+    },
+    { $inc: { messageXp: 10 }, $set: { lastMessageXpAt: now } }
+  );
+}
+
+async function startVoiceSession(guildId, userId, username, channelId) {
+  const _id = `${guildId}:${userId}`;
+  await voiceSessionsCollection.updateOne(
+    { _id },
+    { $set: { guildId, userId, username, channelId, startedAt: new Date() } },
+    { upsert: true }
+  );
+}
+
+async function endVoiceSession(guildId, userId) {
+  const _id = `${guildId}:${userId}`;
+  const session = await voiceSessionsCollection.findOne({ _id });
+  if (!session) return;
+
+  await voiceSessionsCollection.deleteOne({ _id });
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(session.startedAt).getTime()) / 1000));
+  if (seconds <= 0) return;
+
+  const minutes = Math.floor(seconds / 60);
+  await levelStatsCollection.updateOne(
+    { _id },
+    {
+      $set: { guildId, userId, name: session.username },
+      $inc: { voiceSeconds: seconds, voiceXp: minutes }
+    },
+    { upsert: true }
+  );
+}
+
+async function getLevelStats(guildId, userId) {
+  return await levelStatsCollection.findOne({ _id: `${guildId}:${userId}` }) || {
+    guildId, userId, name: '', messages: 0, messageXp: 0, voiceSeconds: 0, voiceXp: 0
+  };
+}
+
+async function getGuildLevelStats(guildId) {
+  return await levelStatsCollection.find({ guildId }).toArray();
+}
+\n// 無効チャンネル追加
 async function addDisabledChannel(channelId) {
   await disabledChannelsCollection.updateOne(
     { _id: channelId },
