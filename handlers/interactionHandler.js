@@ -143,39 +143,37 @@ async function handleInteraction(interaction, client) {
 
   const { commandName } = interaction;
 
-  // 🛑 出現無効化コマンド (/leave)
+  // 🛑 出現無効化コマンド (/leave)：コマンドを実行したチャンネルを無効化
   if (commandName === 'leave') {
-    const targetChannel = interaction.options.getChannel('channel');
-
-    if (!targetChannel) {
+    if (!interaction.guild || !interaction.channelId) {
       return interaction.reply({
-        content: '…チャンネルを指定するのだ',
+        content: '…サーバー内のチャンネルで使うのだ。',
         ephemeral: true
       });
     }
 
-    await addDisabledChannel(targetChannel.id);
+    const channelId = interaction.channelId;
+    await addDisabledChannel(channelId);
 
     return interaction.reply({
-      content: `…**<#${targetChannel.id}>** では今後和紙が出現しないように設定したのだ。…和紙、嫌われてるんかなぁ`
+      content: `…このチャンネル（<#${channelId}>）では今後和紙が出現しないように設定したのだ。…和紙、嫌われてるんかなぁ`
     });
   }
 
-  // 🟢 出現再有効化コマンド (/unleave)
+  // 🟢 出現再有効化コマンド (/unleave)：コマンドを実行したチャンネルを再有効化
   if (commandName === 'unleave') {
-    const targetChannel = interaction.options.getChannel('channel');
-
-    if (!targetChannel) {
+    if (!interaction.guild || !interaction.channelId) {
       return interaction.reply({
-        content: '…チャンネルを指定するのだ',
+        content: '…サーバー内のチャンネルで使うのだ。',
         ephemeral: true
       });
     }
 
-    await removeDisabledChannel(targetChannel.id);
+    const channelId = interaction.channelId;
+    await removeDisabledChannel(channelId);
 
     return interaction.reply({
-      content: `…**<#${targetChannel.id}>** で再び和紙が出現するように設定したのだ！`
+      content: `…このチャンネル（<#${channelId}>）で再び和紙が出現するように設定したのだ！`
     });
   }
 
