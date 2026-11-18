@@ -69,6 +69,7 @@ const commands = [
   new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
+  new SlashCommandBuilder().setName('fugen').setDescription('…不言の記憶からランダムに語るのだ'),
 
   // 🛑 出現無効化・再有効化コマンド
   new SlashCommandBuilder()
@@ -133,7 +134,9 @@ const commands = [
   new SlashCommandBuilder().setName('addtomato').setDescription('…tomato(的トマト)に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addao').setDescription('…ao（黒歴史）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addcpc').setDescription('…cpc（ポテチロボ）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
-  new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト列伝）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true))
+  new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト列伝）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+  new SlashCommandBuilder().setName('addfugen').setDescription('…fugen（不言）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remfugen').setDescription('…fugen（不言）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setAutocomplete(true).setRequired(true))
 ].map(cmd => {
   // 全コマンドにDM対応・ユーザーアプリ対応・コンテキスト設定を適用
   if (typeof cmd.setIntegrationTypes === 'function') {
