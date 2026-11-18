@@ -69,7 +69,7 @@ const commands = [
   new SlashCommandBuilder().setName('wappa').setDescription('…貴方RPG、興味ある？'),
   new SlashCommandBuilder().setName('cpc').setDescription('…カートゥーンポテチが起動するのだ'),
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
-  new SlashCommandBuilder().setName('fugen').setDescription('…不言の記憶からランダムに語るのだ'),
+  new SlashCommandBuilder().setName('fugen').setDescription('…和紙の永遠のライバルの記憶なのだ'),
 
   // 🛑 出現無効化・再有効化コマンド
   new SlashCommandBuilder()
