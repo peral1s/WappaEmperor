@@ -202,6 +202,10 @@ async function handleMessage(message, client) {
   // ==========================================
   // キーワード判定
   // ==========================================
+  if (message.content.includes('汁そば')) {
+    message.channel.send('ドーナツって言ってるんですけど…まぁ良いや');
+  }
+
   if (message.content.includes('のだ')) {
     message.channel.send('ずんだもんみたいな語尾やめるのだ');
   }
