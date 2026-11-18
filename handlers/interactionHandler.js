@@ -515,7 +515,7 @@ async function handleInteraction(interaction, client) {
     },
     addfugen: {
       category: 'fugenReplies',
-      name: '不言（fugen）'
+      name: 'ふげん（fugen）'
     }
   };
 
@@ -528,7 +528,7 @@ async function handleInteraction(interaction, client) {
     remcpc: { category: 'helloReplies', name: 'カートゥーンポテチ（cpc）' },
     remmgm: { category: 'megamiReplies', name: '女神（mgm）' },
     remgal_tomato: { category: 'gyarutomatoReplies', name: 'ギャルトマト列伝（gal_tomato）' },
-    remfugen: { category: 'fugenReplies', name: '不言（fugen）' }
+    remfugen: { category: 'fugenReplies', name: 'ふげん（fugen）' }
   };
 
   const remCommand = remCommands[commandName];
