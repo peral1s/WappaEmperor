@@ -115,7 +115,8 @@ async function handleInteraction(interaction, client) {
       remao: 'aoReplies',
       remcpc: 'helloReplies',
       remmgm: 'megamiReplies',
-      remgal_tomato: 'gyarutomatoReplies'
+      remgal_tomato: 'gyarutomatoReplies',
+      remfugen: 'fugenReplies'
     };
 
     const category = autocompleteCategories[interaction.commandName];
@@ -423,6 +424,13 @@ async function handleInteraction(interaction, client) {
     });
   }
 
+  // fugen
+  if (commandName === 'fugen') {
+    return interaction.reply({
+      content: await getRandomReply('fugenReplies')
+    });
+  }
+
   // gal_tomato
   if (commandName === 'gal_tomato') {
     // 1%の確率で真・最終話
@@ -504,6 +512,10 @@ async function handleInteraction(interaction, client) {
     addgal_tomato: {
       category: 'gyarutomatoReplies',
       name: 'ギャルトマト列伝（gal_tomato）'
+    },
+    addfugen: {
+      category: 'fugenReplies',
+      name: '不言（fugen）'
     }
   };
 
@@ -515,7 +527,8 @@ async function handleInteraction(interaction, client) {
     remao: { category: 'aoReplies', name: 'あお（ao）' },
     remcpc: { category: 'helloReplies', name: 'カートゥーンポテチ（cpc）' },
     remmgm: { category: 'megamiReplies', name: '女神（mgm）' },
-    remgal_tomato: { category: 'gyarutomatoReplies', name: 'ギャルトマト列伝（gal_tomato）' }
+    remgal_tomato: { category: 'gyarutomatoReplies', name: 'ギャルトマト列伝（gal_tomato）' },
+    remfugen: { category: 'fugenReplies', name: '不言（fugen）' }
   };
 
   const remCommand = remCommands[commandName];
