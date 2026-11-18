@@ -135,8 +135,8 @@ const commands = [
   new SlashCommandBuilder().setName('addao').setDescription('…ao（黒歴史）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addcpc').setDescription('…cpc（ポテチロボ）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
   new SlashCommandBuilder().setName('addgal_tomato').setDescription('…gal_tomato（ギャルトマト列伝）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
-  new SlashCommandBuilder().setName('addfugen').setDescription('…fugen（不言）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
-  new SlashCommandBuilder().setName('remfugen').setDescription('…fugen（不言）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setAutocomplete(true).setRequired(true))
+  new SlashCommandBuilder().setName('addfugen').setDescription('…ふげん（fugen）に新しい記憶を刻むのだ').addStringOption(opt => opt.setName('word').setDescription('追加したい言葉を入力').setRequired(true)),
+  new SlashCommandBuilder().setName('remfugen').setDescription('…ふげん（fugen）の追加した記憶を消すのだ').addStringOption(opt => opt.setName('word').setDescription('削除したい言葉を完全一致で入力').setAutocomplete(true).setRequired(true))
 ].map(cmd => {
   // 全コマンドにDM対応・ユーザーアプリ対応・コンテキスト設定を適用
   if (typeof cmd.setIntegrationTypes === 'function') {
