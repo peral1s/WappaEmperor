@@ -71,24 +71,14 @@ const commands = [
   new SlashCommandBuilder().setName('gal_tomato').setDescription('…ギャルトマト列伝なのだ 1%で真最終話!?'),
   new SlashCommandBuilder().setName('fugen').setDescription('…和紙の永遠のライバルの記憶なのだ'),
 
-  // 🛑 出現無効化・再有効化コマンド
+  // 🛑 コマンドを実行したチャンネルの出現無効化・再有効化
   new SlashCommandBuilder()
     .setName('leave')
-    .setDescription('…指定したチャンネルで和紙が出現（応答）しないように設定するのだ')
-    .addChannelOption(option =>
-      option.setName('channel')
-            .setDescription('出現を無効化したいチャンネル')
-            .setRequired(true)
-    ),
+    .setDescription('…このチャンネルで和紙が出現（応答）しないように設定するのだ'),
 
   new SlashCommandBuilder()
     .setName('unleave')
-    .setDescription('…指定したチャンネルで再び和紙が出現（応答）するようにするのだ')
-    .addChannelOption(option =>
-      option.setName('channel')
-            .setDescription('出現を再び有効化したいチャンネル')
-            .setRequired(true)
-    ),
+    .setDescription('…このチャンネルで再び和紙が出現（応答）するようにするのだ'),
 
   // 💡 発言ログ抽出コマンド（日付ジャンプ・ユーザー指定対応版）
   new SlashCommandBuilder()
