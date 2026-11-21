@@ -102,14 +102,15 @@ client.on('messageCreate', async (message) => {
     if (!playingField?.value) return;
 
     // 例: 「六ノ輪 by Chevon」→「六ノ輪 : Chevon」
-    const match = playingField.value.trim().match(/^(.+?)\\s+by\\s+(.+)$/i);
-    if (!match) {
-      console.log('曲情報を解析できませんでした:', playingField.value);
+    const playingText = playingField.value.trim();
+    const separatorIndex = playingText.toLowerCase().lastIndexOf(' by ');
+    if (separatorIndex <= 0) {
+      console.log('曲情報を解析できませんでした:', playingText);
       return;
     }
 
-    const title = match[1].trim();
-    const artist = match[2].trim();
+    const title = playingText.slice(0, separatorIndex).trim();
+    const artist = playingText.slice(separatorIndex + 4).trim();
     const status = `${title} : ${artist}`.slice(0, 500);
 
     // Jockie自身のVC参加先を取得する
