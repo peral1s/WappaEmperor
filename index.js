@@ -132,11 +132,11 @@ client.on('messageCreate', async (message) => {
 
     const status = playingText.slice(0, 500);
 
-    // Jockie自身のVC参加先を取得する
-    const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
-    const voiceChannelId = jockieVoiceState?.channelId;
-    if (!voiceChannelId) {
-      console.log('Jockieの参加VCを特定できません:', message.author.tag);
+    // ステータスを書き込む対象のVCを固定
+    const voiceChannelId = '1401716992024645753';
+    const targetVoiceChannel = message.guild.channels.cache.get(voiceChannelId);
+    if (!targetVoiceChannel) {
+      console.log('ステータス更新先VCがこのサーバー内に見つかりません:', voiceChannelId);
       return;
     }
 
@@ -144,8 +144,6 @@ client.on('messageCreate', async (message) => {
     await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
       body: { status }
     });
-
-    const targetVoiceChannel = message.guild.channels.cache.get(voiceChannelId);
     console.log(
       `VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel?.name || '名前取得不可'} (${voiceChannelId})`
     );
