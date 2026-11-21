@@ -145,7 +145,10 @@ client.on('messageCreate', async (message) => {
       body: { status }
     });
 
-    console.log(`VCステータス更新: ${status} (${voiceChannelId})`);
+    const targetVoiceChannel = message.guild.channels.cache.get(voiceChannelId);
+    console.log(
+      `VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel?.name || '名前取得不可'} (${voiceChannelId})`
+    );
   } catch (error) {
     console.error('Jockie曲情報・VCステータス更新エラー:', error);
   }
