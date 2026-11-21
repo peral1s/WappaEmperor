@@ -101,27 +101,24 @@ client.on('messageCreate', async (message) => {
     );
     if (!playingField?.value) return;
 
-    // JockieのEmbed値はMarkdownリンク＋太字で届くことがある:
-    // [**ハルキゲニア** **by** **Chevon**](https://open.spotify.com/track/...)
-    // 表示文字列だけを取り出してMarkdown装飾を除去する
-    const playingText = playingField.value
-      .trim()
-      .replace(/^\\[([\\s\\S]*?)\\]\\(https?:\\/\\/[^\\s)]+\\)$/, '$1')
+    // Markdownリンクの表示部分だけを取り出す（URLの末尾や空白に依存しない）
+    const rawPlayingText = playingField.value.trim();
+    const linkLabel = rawPlayingText.match(/^\\[([\\s\\S]*?)\\]\\(/);
+    const playingText = (linkLabel ? linkLabel[1] : rawPlayingText)
       .replace(/\\*\\*/g, '')
       .replace(/\\*/g, '')
       .replace(/\\s+/g, ' ')
       .trim();
 
-    const trackMatch = playingText.match(/^(.+?)\\s+by\\s+(.+)$/i);
-    if (!trackMatch) {
-      // 添付ファイル名など、曲情報ではない通知は無視する
+    const byIndex = playingText.toLowerCase().lastIndexOf(' by ');
+    if (byIndex <= 0) {
       console.log('JockieのPlaying欄は曲情報形式ではないためスキップ:', playingText);
       return;
     }
 
-    const title = trackMatch[1].trim();
-    const artist = trackMatch[2].trim();
-    if (!title || !artist) return;
+    const title = playingText.slice(0, byIndex).trim();
+    const artist = playingText.slice(byIndex + 4).trim();
+
     const status = `${title} : ${artist}`.slice(0, 500);
 
     // Jockie自身のVC参加先を取得する
