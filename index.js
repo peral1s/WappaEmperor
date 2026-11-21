@@ -132,15 +132,20 @@ client.on('messageCreate', async (message) => {
 
     const status = playingText.slice(0, 500);
 
-    // ステータスを書き込む対象のVCを固定
-    const voiceChannelId = '1401716992024645753';
+    // 曲情報を投稿したチャンネルではなく、Jockie自身が参加しているVCを取得
+    const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
+    const voiceChannelId = jockieVoiceState?.channelId;
+    if (!voiceChannelId) {
+      console.log('Jockieの参加VCを特定できません:', message.author.tag);
+      return;
+    }
     const targetVoiceChannel = message.guild.channels.cache.get(voiceChannelId);
     if (!targetVoiceChannel) {
-      console.log('ステータス更新先VCがこのサーバー内に見つかりません:', voiceChannelId);
+      console.log('Jockieの参加VCがサーバー内に見つかりません:', voiceChannelId);
       return;
     }
 
-    // Discord API: PUT /channels/{channel.id}/voice-status
+    // Jockieが参加しているVCのステータスを更新
     await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
       body: { status }
     });
