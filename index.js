@@ -104,14 +104,25 @@ client.on('messageCreate', async (message) => {
     // Markdownリンクの表示部分だけを取り出す（URLの末尾や空白に依存しない）
     const rawPlayingText = playingField.value.trim();
 
-    // DiscordのMarkdownリンク [**曲名** **by** **アーティスト**](URL) を解析
-    // 正規表現はJSソース上でバックスラッシュを二重にしないこと
-    const linkLabel = rawPlayingText.match(/^\[([\s\S]*?)\]\(/);
-    const playingText = (linkLabel ? linkLabel[1] : rawPlayingText)
-      .replace(/\*\*/g, '')
-      .replace(/\*/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    // DiscordのMarkdownリンクから、リンク先URLではなく表示文字列を取り出す
+    // 正規表現を使わず、Markdownの [表示文字列](URL) を処理する
+    const rawPlayingText = playingField.value.trim();
+    const labelStart = rawPlayingText.indexOf('[');
+    const labelEnd = rawPlayingText.lastIndexOf('](');
+    const playingLabel =
+      labelStart === 0 && labelEnd > labelStart
+        ? rawPlayingText.slice(labelStart + 1, labelEnd)
+        : rawPlayingText;
+
+    const playingText = playingLabel
+      .replaceAll('**', '')
+      .replaceAll('*', '')
+      .replaceAll('\n', ' ')
+      .replaceAll('\r', ' ')
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .join(' ');
 
     const byIndex = playingText.toLowerCase().lastIndexOf(' by ');
     if (byIndex <= 0) {
