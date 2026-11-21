@@ -84,6 +84,53 @@ client.on('messageCreate', (message) => {
   });
 });
 
+// Jockie Musicの再生通知から曲情報を読み取り、VCステータスを更新
+client.on('messageCreate', async (message) => {
+  try {
+    if (!message.guild || !message.author.bot || message.author.id === client.user.id) return;
+
+    // Jockieの「Started playing」Embedだけを対象にする
+    const embed = message.embeds.find((item) =>
+      item.author?.name?.toLowerCase().includes('started playing') &&
+      item.fields?.some((field) => field.name?.trim().toLowerCase() === 'playing')
+    );
+    if (!embed) return;
+
+    const playingField = embed.fields.find(
+      (field) => field.name?.trim().toLowerCase() === 'playing'
+    );
+    if (!playingField?.value) return;
+
+    // 例: 「六ノ輪 by Chevon」→「六ノ輪 : Chevon」
+    const match = playingField.value.trim().match(/^(.+?)\\s+by\\s+(.+)$/i);
+    if (!match) {
+      console.log('曲情報を解析できませんでした:', playingField.value);
+      return;
+    }
+
+    const title = match[1].trim();
+    const artist = match[2].trim();
+    const status = `${title} : ${artist}`.slice(0, 500);
+
+    // Jockie自身のVC参加先を取得する
+    const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
+    const voiceChannelId = jockieVoiceState?.channelId;
+    if (!voiceChannelId) {
+      console.log('Jockieの参加VCを特定できません:', message.author.tag);
+      return;
+    }
+
+    // Discord API: PUT /channels/{channel.id}/voice-status
+    await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
+      body: { status }
+    });
+
+    console.log(`VCステータス更新: ${status} (${voiceChannelId})`);
+  } catch (error) {
+    console.error('Jockie曲情報・VCステータス更新エラー:', error);
+  }
+});
+
 // VC滞在時間の集計
 client.on('voiceStateUpdate', async (oldState, newState) => {
   try {
