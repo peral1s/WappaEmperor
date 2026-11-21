@@ -103,11 +103,14 @@ client.on('messageCreate', async (message) => {
 
     // Markdownリンクの表示部分だけを取り出す（URLの末尾や空白に依存しない）
     const rawPlayingText = playingField.value.trim();
-    const linkLabel = rawPlayingText.match(/^\\[([\\s\\S]*?)\\]\\(/);
+
+    // DiscordのMarkdownリンク [**曲名** **by** **アーティスト**](URL) を解析
+    // 正規表現はJSソース上でバックスラッシュを二重にしないこと
+    const linkLabel = rawPlayingText.match(/^\[([\s\S]*?)\]\(/);
     const playingText = (linkLabel ? linkLabel[1] : rawPlayingText)
-      .replace(/\\*\\*/g, '')
-      .replace(/\\*/g, '')
-      .replace(/\\s+/g, ' ')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/\s+/g, ' ')
       .trim();
 
     const byIndex = playingText.toLowerCase().lastIndexOf(' by ');
