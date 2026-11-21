@@ -133,7 +133,7 @@ client.on('messageCreate', async (message) => {
     const title = playingText.slice(0, byIndex).trim();
     const artist = playingText.slice(byIndex + 4).trim();
 
-    const status = `${title} : ${artist}`.slice(0, 500);
+    const status = playingText.slice(0, 500);
 
     // Jockie自身のVC参加先を取得する
     const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
