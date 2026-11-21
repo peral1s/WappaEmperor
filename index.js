@@ -101,16 +101,27 @@ client.on('messageCreate', async (message) => {
     );
     if (!playingField?.value) return;
 
-    // 例: 「六ノ輪 by Chevon」→「六ノ輪 : Chevon」
-    const playingText = playingField.value.trim();
-    const separatorIndex = playingText.toLowerCase().lastIndexOf(' by ');
-    if (separatorIndex <= 0) {
-      console.log('曲情報を解析できませんでした:', playingText);
+    // JockieのEmbed値はMarkdownリンク＋太字で届くことがある:
+    // [**ハルキゲニア** **by** **Chevon**](https://open.spotify.com/track/...)
+    // 表示文字列だけを取り出してMarkdown装飾を除去する
+    const playingText = playingField.value
+      .trim()
+      .replace(/^\\[([\\s\\S]*?)\\]\\(https?:\\/\\/[^\\s)]+\\)$/, '$1')
+      .replace(/\\*\\*/g, '')
+      .replace(/\\*/g, '')
+      .replace(/\\s+/g, ' ')
+      .trim();
+
+    const trackMatch = playingText.match(/^(.+?)\\s+by\\s+(.+)$/i);
+    if (!trackMatch) {
+      // 添付ファイル名など、曲情報ではない通知は無視する
+      console.log('JockieのPlaying欄は曲情報形式ではないためスキップ:', playingText);
       return;
     }
 
-    const title = playingText.slice(0, separatorIndex).trim();
-    const artist = playingText.slice(separatorIndex + 4).trim();
+    const title = trackMatch[1].trim();
+    const artist = trackMatch[2].trim();
+    if (!title || !artist) return;
     const status = `${title} : ${artist}`.slice(0, 500);
 
     // Jockie自身のVC参加先を取得する
