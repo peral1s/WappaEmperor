@@ -101,9 +101,6 @@ client.on('messageCreate', async (message) => {
     );
     if (!playingField?.value) return;
 
-    // Markdownリンクの表示部分だけを取り出す（URLの末尾や空白に依存しない）
-    const rawPlayingText = playingField.value.trim();
-
     // DiscordのMarkdownリンクから、リンク先URLではなく表示文字列を取り出す
     // 正規表現を使わず、Markdownの [表示文字列](URL) を処理する
     const rawPlayingText = playingField.value.trim();
