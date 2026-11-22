@@ -8,6 +8,7 @@ const {
   addCustomReply,
   removeCustomReply,
   getCustomReplies,
+  setMusicStatusName,
   removeCustomReplyForUndo,
   createReplyUndoAction,
   undoReplyAction
@@ -142,6 +143,19 @@ async function handleInteraction(interaction, client) {
   if (!interaction.isCommand()) return;
 
   const { commandName } = interaction;
+
+  // 音楽VCステータスの1行目を設定
+  if (commandName === 'status') {
+    if (!interaction.guild) {
+      return interaction.reply({ content: '…サーバー内で使うのだ。', ephemeral: true });
+    }
+    const name = interaction.options.getString('name', true).trim();
+    if (!name) {
+      return interaction.reply({ content: '…空っぽの彩りは設定できないのだ。', ephemeral: true });
+    }
+    await setMusicStatusName(interaction.guild.id, name);
+    return interaction.reply({ content: '…和紙がボイスチャンネルに彩りを与えるのだ' });
+  }
 
   // 🛑 出現無効化コマンド (/leave)：コマンドを実行したチャンネルを無効化
   if (commandName === 'leave') {
