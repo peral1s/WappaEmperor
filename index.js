@@ -6,7 +6,7 @@ if (!process.env.TOKEN) {
 
 const express = require('express');
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, setMusicStatusSong } = require('./db/database');
+const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, setMusicStatusSong, getMusicStatusTargetChannel } = require('./db/database');
 const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
@@ -130,34 +130,41 @@ client.on('messageCreate', async (message) => {
     const title = playingText.slice(0, byIndex).trim();
     const artist = playingText.slice(byIndex + 4).trim();
 
+    // 曲情報の出所としてJockieの参加VCを記録
+    const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
+    const jockieChannelId = jockieVoiceState?.channelId;
+    if (!jockieChannelId) {
+      console.log('Jockieの参加VCを特定できません:', message.author.tag);
+      return;
+    }
+
+    // 最新曲だけを保存。1行目の名前はここでは変更しない
+    await setMusicStatusSong(message.guild.id, jockieChannelId, playingText);
+
+    // /statusを実行した人が指定したVCに、曲が変わったことを反映
+    const voiceChannelId = await getMusicStatusTargetChannel(message.guild.id);
+    if (!voiceChannelId) {
+      console.log('表示先VCが未設定のため曲情報のみ保存:', playingText);
+      return;
+    }
+
     const statusName = await getMusicStatusName(message.guild.id);
     const status = [statusName, playingText]
       .filter(Boolean)
       .join('┊︎')
       .slice(0, 500);
 
-    // 曲情報を投稿したチャンネルではなく、Jockie自身が参加しているVCを取得
-    const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
-    const voiceChannelId = jockieVoiceState?.channelId;
-    if (!voiceChannelId) {
-      console.log('Jockieの参加VCを特定できません:', message.author.tag);
-      return;
-    }
     const targetVoiceChannel = message.guild.channels.cache.get(voiceChannelId);
     if (!targetVoiceChannel) {
-      console.log('Jockieの参加VCがサーバー内に見つかりません:', voiceChannelId);
+      console.log('ステータス表示先VCが見つかりません:', voiceChannelId);
       return;
     }
 
-    // 現在の曲とVCを保存し、あとから /status が実行された際にも即時反映できるようにする
-    await setMusicStatusSong(message.guild.id, voiceChannelId, playingText);
-
-    // Jockieが参加しているVCのステータスを更新
     await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
       body: { status }
     });
     console.log(
-      `VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel?.name || '名前取得不可'} (${voiceChannelId})`
+      `VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel.name} (${voiceChannelId})`
     );
   } catch (error) {
     console.error('Jockie曲情報・VCステータス更新エラー:', error);
@@ -178,10 +185,13 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
     if (isJockieMusic && leftVoiceChannel) {
       try {
-        await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
-          body: { status: null }
-        });
-        console.log(`Jockie退出に伴いVCステータスをクリア: ${oldState.channelId}`);
+        const statusChannelId = await getMusicStatusTargetChannel(oldState.guild.id);
+        if (statusChannelId) {
+          await client.rest.put(`/channels/${statusChannelId}/voice-status`, {
+            body: { status: null }
+          });
+          console.log(`Jockie退出に伴い表示先VCステータスをクリア: ${statusChannelId}`);
+        }
       } catch (error) {
         console.error('VCステータスのクリアに失敗:', error);
       }
