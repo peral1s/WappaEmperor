@@ -161,7 +161,27 @@ client.on('messageCreate', async (message) => {
 client.on('voiceStateUpdate', async (oldState, newState) => {
   try {
     const member = newState.member || oldState.member;
-    if (!member || member.user.bot) return;
+    if (!member) return;
+
+    // Jockie MusicがVCから退出、または別のVCへ移動したら元のVCステータスを消す
+    const isJockieMusic =
+      member.user.bot && member.user.username.toLowerCase().includes('jockie');
+    const leftVoiceChannel =
+      oldState.channelId && oldState.channelId !== newState.channelId;
+
+    if (isJockieMusic && leftVoiceChannel) {
+      try {
+        await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
+          body: { status: null }
+        });
+        console.log(`Jockie退出に伴いVCステータスをクリア: ${oldState.channelId}`);
+      } catch (error) {
+        console.error('VCステータスのクリアに失敗:', error);
+      }
+    }
+
+    // ここから下のVC滞在時間集計は従来どおり人間メンバーのみ対象
+    if (member.user.bot) return;
 
     const guildId = newState.guild.id;
     const userId = member.id;
