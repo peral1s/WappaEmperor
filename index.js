@@ -138,33 +138,30 @@ client.on('messageCreate', async (message) => {
       return;
     }
 
-    // 最新曲だけを保存。1行目の名前はここでは変更しない
+    // 最新曲を保存。曲情報の表示先はJockie自身が参加しているVC
     await setMusicStatusSong(message.guild.id, jockieChannelId, playingText);
 
-    // /statusを実行した人が指定したVCに、曲が変わったことを反映
-    const voiceChannelId = await getMusicStatusTargetChannel(message.guild.id);
-    if (!voiceChannelId) {
-      console.log('表示先VCが未設定のため曲情報のみ保存:', playingText);
-      return;
-    }
-
+    // 左側の名前用VCとJockieのVCが同じ場合だけ、同じステータス内に左右を並べる
+    const statusChannelId = await getMusicStatusTargetChannel(message.guild.id);
     const statusName = await getMusicStatusName(message.guild.id);
-    const status = [statusName, playingText]
+    const status = (statusChannelId === jockieChannelId
+      ? [statusName, playingText]
+      : [playingText])
       .filter(Boolean)
       .join('┊︎')
       .slice(0, 500);
 
-    const targetVoiceChannel = message.guild.channels.cache.get(voiceChannelId);
+    const targetVoiceChannel = message.guild.channels.cache.get(jockieChannelId);
     if (!targetVoiceChannel) {
-      console.log('ステータス表示先VCが見つかりません:', voiceChannelId);
+      console.log('Jockieの参加VCがサーバー内に見つかりません:', jockieChannelId);
       return;
     }
 
-    await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
+    await client.rest.put(`/channels/${jockieChannelId}/voice-status`, {
       body: { status }
     });
     console.log(
-      `VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel.name} (${voiceChannelId})`
+      `Jockie側VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel.name} (${jockieChannelId})`
     );
   } catch (error) {
     console.error('Jockie曲情報・VCステータス更新エラー:', error);
@@ -186,11 +183,19 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     if (isJockieMusic && leftVoiceChannel) {
       try {
         const statusChannelId = await getMusicStatusTargetChannel(oldState.guild.id);
-        if (statusChannelId) {
-          await client.rest.put(`/channels/${statusChannelId}/voice-status`, {
+        if (oldState.channelId === statusChannelId) {
+          // 左右が同じVCだった場合、曲情報だけを消して左側の名前を残す
+          const statusName = await getMusicStatusName(oldState.guild.id);
+          await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
+            body: { status: statusName || null }
+          });
+          console.log(`Jockie退出: 左側の名前を残して曲情報を削除: ${oldState.channelId}`);
+        } else {
+          // 別VCならJockie側だけを消し、/status側のVCには触れない
+          await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
             body: { status: null }
           });
-          console.log(`Jockie退出に伴い表示先VCステータスをクリア: ${statusChannelId}`);
+          console.log(`Jockie退出: Jockie側VCステータスをクリア: ${oldState.channelId}`);
         }
       } catch (error) {
         console.error('VCステータスのクリアに失敗:', error);
