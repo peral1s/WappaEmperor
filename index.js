@@ -133,7 +133,7 @@ client.on('messageCreate', async (message) => {
     const statusName = await getMusicStatusName(message.guild.id);
     const status = [statusName, playingText]
       .filter(Boolean)
-      .join('\\n')
+      .join('\n')
       .slice(0, 500);
 
     // 曲情報を投稿したチャンネルではなく、Jockie自身が参加しているVCを取得
