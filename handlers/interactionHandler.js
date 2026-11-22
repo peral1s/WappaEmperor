@@ -177,7 +177,11 @@ async function handleInteraction(interaction, client) {
     });
 
     console.log(`/status即時反映成功: ${status} | ${voiceChannelId}`);
-    return interaction.reply({ content: '…和紙がボイスチャンネルに彩りを与えるのだ' });
+    await interaction.reply({ content: '…チャンネル名を変形したのだ。…まだまだ和紙の力はこんなものではないぞ？' });
+    setTimeout(() => {
+      interaction.deleteReply().catch(() => {});
+    }, 5000);
+    return;
   }
 
   // 🛑 出現無効化コマンド (/leave)：コマンドを実行したチャンネルを無効化
