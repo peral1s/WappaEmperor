@@ -6,7 +6,7 @@ if (!process.env.TOKEN) {
 
 const express = require('express');
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { connectDB, startVoiceSession, endVoiceSession } = require('./db/database');
+const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName } = require('./db/database');
 const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
@@ -130,7 +130,11 @@ client.on('messageCreate', async (message) => {
     const title = playingText.slice(0, byIndex).trim();
     const artist = playingText.slice(byIndex + 4).trim();
 
-    const status = playingText.slice(0, 500);
+    const statusName = await getMusicStatusName(message.guild.id);
+    const status = [statusName, playingText]
+      .filter(Boolean)
+      .join('\\n')
+      .slice(0, 500);
 
     // 曲情報を投稿したチャンネルではなく、Jockie自身が参加しているVCを取得
     const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
