@@ -216,6 +216,22 @@ async function getMusicStatusSong(guildId) {
   return { channelId: doc.channelId, song: doc.song };
 }
 
+// /statusを実行した人が指定した、曲情報を表示するVCを保存
+async function setMusicStatusTargetChannel(guildId, channelId) {
+  if (!musicStatusNamesCollection) throw new Error('MongoDBに接続されていません');
+  await musicStatusNamesCollection.updateOne(
+    { _id: guildId },
+    { $set: { statusChannelId: channelId, statusChannelUpdatedAt: new Date() } },
+    { upsert: true }
+  );
+}
+
+async function getMusicStatusTargetChannel(guildId) {
+  if (!musicStatusNamesCollection) return null;
+  const doc = await musicStatusNamesCollection.findOne({ _id: guildId });
+  return doc?.statusChannelId || null;
+}
+
 // 無効チャンネル追加
 async function addDisabledChannel(channelId) {
   await disabledChannelsCollection.updateOne(
@@ -351,5 +367,7 @@ module.exports = {
   setMusicStatusName,
   getMusicStatusName,
   setMusicStatusSong,
-  getMusicStatusSong
+  getMusicStatusSong,
+  setMusicStatusTargetChannel,
+  getMusicStatusTargetChannel
 };
