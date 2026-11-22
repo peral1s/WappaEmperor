@@ -7,6 +7,7 @@ let customRepliesCollection;
 let replyUndoActionsCollection;
 let levelStatsCollection;
 let voiceSessionsCollection;
+let musicStatusNamesCollection;
 
 // MongoDB接続
 async function connectDB() {
@@ -30,6 +31,7 @@ async function connectDB() {
 
   levelStatsCollection = db.collection('levelStats');
   voiceSessionsCollection = db.collection('voiceSessions');
+  musicStatusNamesCollection = db.collection('musicStatusNames');
   await replyUndoActionsCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
   console.log('MongoDB接続完了');
@@ -181,6 +183,22 @@ async function getGuildLevelStats(guildId) {
   return [...byUser.values()];
 }
 
+// サーバーごとのVCステータス1行目を保存・取得
+async function setMusicStatusName(guildId, name) {
+  if (!musicStatusNamesCollection) throw new Error('MongoDBに接続されていません');
+  await musicStatusNamesCollection.updateOne(
+    { _id: guildId },
+    { $set: { name, updatedAt: new Date() } },
+    { upsert: true }
+  );
+}
+
+async function getMusicStatusName(guildId) {
+  if (!musicStatusNamesCollection) return '';
+  const doc = await musicStatusNamesCollection.findOne({ _id: guildId });
+  return doc?.name || '';
+}
+
 // 無効チャンネル追加
 async function addDisabledChannel(channelId) {
   await disabledChannelsCollection.updateOne(
@@ -312,5 +330,7 @@ module.exports = {
   removeCustomReplyForUndo,
   createReplyUndoAction,
   undoReplyAction,
-  getCustomReplies
+  getCustomReplies,
+  setMusicStatusName,
+  getMusicStatusName
 };
