@@ -169,9 +169,9 @@ async function handleInteraction(interaction, client) {
     await setMusicStatusName(interaction.guild.id, name);
     await setMusicStatusTargetChannel(interaction.guild.id, voiceChannelId);
 
-    // 1行目は手動変更まで固定し、2行目は曲変更イベントで更新する
+    // 左側はコマンド実行者のVCだけを変更。Jockieも同じVCにいる場合だけ曲情報を併記する
     const currentMusic = await getMusicStatusSong(interaction.guild.id);
-    const song = currentMusic?.song || '';
+    const song = currentMusic?.channelId === voiceChannelId ? currentMusic.song : '';
     const status = [name, song].filter(Boolean).join('┊︎').slice(0, 500);
 
     await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
