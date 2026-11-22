@@ -9,6 +9,7 @@ const {
   removeCustomReply,
   getCustomReplies,
   setMusicStatusName,
+  getMusicStatusSong,
   removeCustomReplyForUndo,
   createReplyUndoAction,
   undoReplyAction
@@ -154,6 +155,28 @@ async function handleInteraction(interaction, client) {
       return interaction.reply({ content: '…空っぽの彩りは設定できないのだ。', ephemeral: true });
     }
     await setMusicStatusName(interaction.guild.id, name);
+
+    // Jockieが現在参加しているVCを探し、保存済みの再生曲と合わせて即時反映
+    const jockieVoiceState = interaction.guild.voiceStates.cache.find((state) =>
+      state.member?.user.bot &&
+      state.member.user.username.toLowerCase().includes('jockie') &&
+      state.channelId
+    );
+
+    if (jockieVoiceState?.channelId) {
+      const currentMusic = await getMusicStatusSong(interaction.guild.id);
+      const song = currentMusic?.song || '';
+      const status = [name, song].filter(Boolean).join('\n').slice(0, 500);
+
+      await client.rest.put(`/channels/${jockieVoiceState.channelId}/voice-status`, {
+        body: { status }
+      });
+
+      console.log(`/status即時反映成功: ${status} | ${jockieVoiceState.channelId}`);
+    } else {
+      console.log(`/status保存完了（Jockieの参加VCなし）: ${interaction.guild.id}`);
+    }
+
     return interaction.reply({ content: '…和紙がボイスチャンネルに彩りを与えるのだ' });
   }
 
