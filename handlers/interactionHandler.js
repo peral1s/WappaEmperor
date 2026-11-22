@@ -10,6 +10,7 @@ const {
   getCustomReplies,
   setMusicStatusName,
   getMusicStatusSong,
+  setMusicStatusTargetChannel,
   removeCustomReplyForUndo,
   createReplyUndoAction,
   undoReplyAction
@@ -166,8 +167,9 @@ async function handleInteraction(interaction, client) {
     }
 
     await setMusicStatusName(interaction.guild.id, name);
+    await setMusicStatusTargetChannel(interaction.guild.id, voiceChannelId);
 
-    // 現在保存されている曲情報があれば、指定した区切り文字で1行にまとめて即時反映
+    // 1行目は手動変更まで固定し、2行目は曲変更イベントで更新する
     const currentMusic = await getMusicStatusSong(interaction.guild.id);
     const song = currentMusic?.song || '';
     const status = [name, song].filter(Boolean).join('┊︎').slice(0, 500);
