@@ -150,33 +150,33 @@ async function handleInteraction(interaction, client) {
     if (!interaction.guild) {
       return interaction.reply({ content: '…サーバー内で使うのだ。', ephemeral: true });
     }
+
+    // コマンドを実行した本人が現在参加しているVCを対象にする
+    const voiceChannelId = interaction.member?.voice?.channelId;
+    if (!voiceChannelId) {
+      return interaction.reply({
+        content: '…先にボイスチャンネルへ入るのだ。',
+        ephemeral: true
+      });
+    }
+
     const name = interaction.options.getString('name', true).trim();
     if (!name) {
       return interaction.reply({ content: '…空っぽの彩りは設定できないのだ。', ephemeral: true });
     }
+
     await setMusicStatusName(interaction.guild.id, name);
 
-    // Jockieが現在参加しているVCを探し、保存済みの再生曲と合わせて即時反映
-    const jockieVoiceState = interaction.guild.voiceStates.cache.find((state) =>
-      state.member?.user.bot &&
-      state.member.user.username.toLowerCase().includes('jockie') &&
-      state.channelId
-    );
+    // 現在保存されている曲情報があれば、指定した区切り文字で1行にまとめて即時反映
+    const currentMusic = await getMusicStatusSong(interaction.guild.id);
+    const song = currentMusic?.song || '';
+    const status = [name, song].filter(Boolean).join('┊︎').slice(0, 500);
 
-    if (jockieVoiceState?.channelId) {
-      const currentMusic = await getMusicStatusSong(interaction.guild.id);
-      const song = currentMusic?.song || '';
-      const status = [name, song].filter(Boolean).join('\n').slice(0, 500);
+    await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
+      body: { status }
+    });
 
-      await client.rest.put(`/channels/${jockieVoiceState.channelId}/voice-status`, {
-        body: { status }
-      });
-
-      console.log(`/status即時反映成功: ${status} | ${jockieVoiceState.channelId}`);
-    } else {
-      console.log(`/status保存完了（Jockieの参加VCなし）: ${interaction.guild.id}`);
-    }
-
+    console.log(`/status即時反映成功: ${status} | ${voiceChannelId}`);
     return interaction.reply({ content: '…和紙がボイスチャンネルに彩りを与えるのだ' });
   }
 
