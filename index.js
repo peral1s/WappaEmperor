@@ -6,7 +6,7 @@ if (!process.env.TOKEN) {
 
 const express = require('express');
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName } = require('./db/database');
+const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, setMusicStatusSong } = require('./db/database');
 const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
@@ -148,6 +148,9 @@ client.on('messageCreate', async (message) => {
       console.log('Jockieの参加VCがサーバー内に見つかりません:', voiceChannelId);
       return;
     }
+
+    // 現在の曲とVCを保存し、あとから /status が実行された際にも即時反映できるようにする
+    await setMusicStatusSong(message.guild.id, voiceChannelId, playingText);
 
     // Jockieが参加しているVCのステータスを更新
     await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
