@@ -11,6 +11,13 @@ const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
 
+// Jockie Music BotのユーザーID（ユーザー名では判定しない）
+const JOCKIE_MUSIC_BOT_IDS = new Set([
+  '412347780841865216',
+  '412347553141751808',
+  '412347257233604609'
+]);
+
 // --- 🌐 Webサーバー起動（Render対策） ---
 const app = express();
 
@@ -87,7 +94,7 @@ client.on('messageCreate', (message) => {
 // Jockie Musicの再生通知から曲情報を読み取り、VCステータスを更新
 client.on('messageCreate', async (message) => {
   try {
-    if (!message.guild || !message.author.bot || message.author.id === client.user.id) return;
+    if (!message.guild || !JOCKIE_MUSIC_BOT_IDS.has(message.author.id)) return;
 
     // Jockieの「Started playing」Embedだけを対象にする
     const embed = message.embeds.find((item) =>
@@ -175,8 +182,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     if (!member) return;
 
     // Jockie MusicがVCから退出、または別のVCへ移動したら元のVCステータスを消す
-    const isJockieMusic =
-      member.user.bot && member.user.username.toLowerCase().includes('jockie');
+    const isJockieMusic = JOCKIE_MUSIC_BOT_IDS.has(member.id);
     const leftVoiceChannel =
       oldState.channelId && oldState.channelId !== newState.channelId;
 
