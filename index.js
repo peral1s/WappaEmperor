@@ -6,7 +6,7 @@ if (!process.env.TOKEN) {
 
 const express = require('express');
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, setMusicStatusSong, getMusicStatusTargetChannel } = require('./db/database');
+const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, getMusicStatusSong, setMusicStatusSong, getMusicStatusTargetChannel } = require('./db/database');
 const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
@@ -208,8 +208,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       }
     }
 
-    // 人間が退出・移動してVCが無人になったら、Jockie側のステータスを削除する
-    // Botだけが残っている場合も「無人」として扱う
+    // 人間が最後の1人としてVCを退出したら、/status由来の左側だけを消す
+    // Jockie由来の右側（曲情報）はここでは変更しない
     if (!member.user.bot && oldState.channelId && oldState.channelId !== newState.channelId) {
       const oldChannel = oldState.guild.channels.cache.get(oldState.channelId);
       const hasHumanMembers = oldChannel
@@ -224,22 +224,23 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       if (!hasHumanMembers) {
         try {
           const statusChannelId = await getMusicStatusTargetChannel(oldState.guild.id);
+
+          // /statusを実行した人のVCだけを対象にする
           if (oldState.channelId === statusChannelId) {
-            // 左右が同じVCなら、手動設定の左側の名前だけを残す
-            const statusName = await getMusicStatusName(oldState.guild.id);
+            const music = await getMusicStatusSong(oldState.guild.id);
+            const rightSide = music?.channelId === oldState.channelId
+              ? music.song
+              : null;
+
             await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
-              body: { status: statusName || null }
+              body: { status: rightSide || null }
             });
-            console.log(`VC無人: 左側の名前を残してJockie側の曲情報を削除: ${oldState.channelId}`);
-          } else {
-            // 別VCならJockie側のステータスだけを削除
-            await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
-              body: { status: null }
-            });
-            console.log(`VC無人: Jockie側VCステータスを削除: ${oldState.channelId}`);
+            console.log(
+              `VC無人: 左側の手動ステータスだけを削除${rightSide ? '（Jockieの曲情報は維持）' : ''}: ${oldState.channelId}`
+            );
           }
         } catch (error) {
-          console.error('VC無人時のステータス削除に失敗:', error);
+          console.error('左側ステータスの削除に失敗:', error);
         }
       }
     }
