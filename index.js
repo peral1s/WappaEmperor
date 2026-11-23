@@ -208,6 +208,42 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       }
     }
 
+    // 人間が退出・移動してVCが無人になったら、Jockie側のステータスを削除する
+    // Botだけが残っている場合も「無人」として扱う
+    if (!member.user.bot && oldState.channelId && oldState.channelId !== newState.channelId) {
+      const oldChannel = oldState.guild.channels.cache.get(oldState.channelId);
+      const hasHumanMembers = oldChannel
+        ? oldChannel.members.some((voiceMember) => !voiceMember.user.bot)
+        : oldState.guild.voiceStates.cache.some(
+            (voiceState) =>
+              voiceState.channelId === oldState.channelId &&
+              voiceState.member &&
+              !voiceState.member.user.bot
+          );
+
+      if (!hasHumanMembers) {
+        try {
+          const statusChannelId = await getMusicStatusTargetChannel(oldState.guild.id);
+          if (oldState.channelId === statusChannelId) {
+            // 左右が同じVCなら、手動設定の左側の名前だけを残す
+            const statusName = await getMusicStatusName(oldState.guild.id);
+            await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
+              body: { status: statusName || null }
+            });
+            console.log(`VC無人: 左側の名前を残してJockie側の曲情報を削除: ${oldState.channelId}`);
+          } else {
+            // 別VCならJockie側のステータスだけを削除
+            await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
+              body: { status: null }
+            });
+            console.log(`VC無人: Jockie側VCステータスを削除: ${oldState.channelId}`);
+          }
+        } catch (error) {
+          console.error('VC無人時のステータス削除に失敗:', error);
+        }
+      }
+    }
+
     // ここから下のVC滞在時間集計は従来どおり人間メンバーのみ対象
     if (member.user.bot) return;
 
