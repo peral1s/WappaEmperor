@@ -168,6 +168,15 @@ async function handleInteraction(interaction, client) {
         return interaction.reply({ content: '…空っぽの彩りは設定できないのだ。', ephemeral: true });
       }
 
+      // 以前のVCに残った手動ステータスを先に片付ける（曲情報は残す）
+      const previousTargetChannelId = await getMusicStatusTargetChannel(interaction.guild.id);
+      if (previousTargetChannelId && previousTargetChannelId !== voiceChannelId) {
+        const previousMusic = await getMusicStatusSong(interaction.guild.id, previousTargetChannelId);
+        await client.rest.put(`/channels/${previousTargetChannelId}/voice-status`, {
+          body: { status: previousMusic?.song || null }
+        });
+      }
+
       await setMusicStatusName(interaction.guild.id, name);
       await setMusicStatusTargetChannel(interaction.guild.id, voiceChannelId);
 
