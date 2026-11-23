@@ -199,21 +199,29 @@ async function getMusicStatusName(guildId) {
   return doc?.name || '';
 }
 
-// 現在再生中の曲とJockieのVCを保存（/status実行時の即時反映に使用）
+// VCごとにJockieの曲情報を保存（3つのJockieが別々のVCにいても独立）
 async function setMusicStatusSong(guildId, channelId, song) {
   if (!musicStatusNamesCollection) throw new Error('MongoDBに接続されていません');
   await musicStatusNamesCollection.updateOne(
     { _id: guildId },
-    { $set: { channelId, song, songUpdatedAt: new Date() } },
+    { $set: { [`songs.${channelId}`]: song, songUpdatedAt: new Date() } },
     { upsert: true }
   );
 }
 
-async function getMusicStatusSong(guildId) {
+async function getMusicStatusSong(guildId, channelId) {
   if (!musicStatusNamesCollection) return null;
   const doc = await musicStatusNamesCollection.findOne({ _id: guildId });
-  if (!doc?.song || !doc?.channelId) return null;
-  return { channelId: doc.channelId, song: doc.song };
+  const song = doc?.songs?.[channelId];
+  return song ? { channelId, song } : null;
+}
+
+async function removeMusicStatusSong(guildId, channelId) {
+  if (!musicStatusNamesCollection) return;
+  await musicStatusNamesCollection.updateOne(
+    { _id: guildId },
+    { $unset: { [`songs.${channelId}`]: '' } }
+  );
 }
 
 // /statusを実行した人が指定した、曲情報を表示するVCを保存
@@ -368,6 +376,7 @@ module.exports = {
   getMusicStatusName,
   setMusicStatusSong,
   getMusicStatusSong,
+  removeMusicStatusSong,
   setMusicStatusTargetChannel,
   getMusicStatusTargetChannel
 };
