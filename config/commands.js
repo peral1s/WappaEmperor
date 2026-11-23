@@ -74,12 +74,22 @@ const commands = [
   // 🛑 コマンドを実行したチャンネルの出現無効化・再有効化
   new SlashCommandBuilder()
     .setName('status')
-    .setDescription('…和紙がボイスチャンネルに彩りを与えるのだ')
-    .addStringOption(option =>
-      option.setName('name')
-        .setDescription('ステータス1行目に表示する言葉')
-        .setMaxLength(100)
-        .setRequired(true)
+    .setDescription('…ボイスチャンネルのステータスを設定・削除するのだ')
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('name')
+        .setDescription('左側に表示するステータスを設定するのだ')
+        .addStringOption(option =>
+          option.setName('name')
+            .setDescription('ステータスに表示する言葉')
+            .setMaxLength(100)
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('clear')
+        .setDescription('左側のステータスを削除するのだ')
     ),
 
   new SlashCommandBuilder()
