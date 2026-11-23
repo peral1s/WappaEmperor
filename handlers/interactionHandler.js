@@ -146,40 +146,62 @@ async function handleInteraction(interaction, client) {
 
   const { commandName } = interaction;
 
-  // 音楽VCステータスの1行目を設定
+  // VCステータス：左側の手動設定と右側のJockie曲情報を独立して管理
   if (commandName === 'status') {
     if (!interaction.guild) {
       return interaction.reply({ content: '…サーバー内で使うのだ。', ephemeral: true });
     }
 
-    // コマンドを実行した本人が現在参加しているVCを対象にする
-    const voiceChannelId = interaction.member?.voice?.channelId;
-    if (!voiceChannelId) {
-      return interaction.reply({
-        content: '…先にボイスチャンネルへ入るのだ。',
-        ephemeral: true
+    const subcommand = interaction.options.getSubcommand();
+
+    if (subcommand === 'name') {
+      const voiceChannelId = interaction.member?.voice?.channelId;
+      if (!voiceChannelId) {
+        return interaction.reply({
+          content: '…先にボイスチャンネルへ入るのだ。',
+          ephemeral: true
+        });
+      }
+
+      const name = interaction.options.getString('name', true).trim();
+      if (!name) {
+        return interaction.reply({ content: '…空っぽの彩りは設定できないのだ。', ephemeral: true });
+      }
+
+      await setMusicStatusName(interaction.guild.id, name);
+      await setMusicStatusTargetChannel(interaction.guild.id, voiceChannelId);
+
+      const currentMusic = await getMusicStatusSong(interaction.guild.id, voiceChannelId);
+      const status = [name, currentMusic?.song].filter(Boolean).join('┊︎').slice(0, 500);
+
+      await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
+        body: { status }
       });
+
+      console.log(`/status name設定: ${status} | ${voiceChannelId}`);
+      await interaction.reply({ content: '…左側の彩りを設定したのだ。' });
+    } else if (subcommand === 'clear') {
+      const targetChannelId = await getMusicStatusTargetChannel(interaction.guild.id);
+      if (!targetChannelId) {
+        return interaction.reply({
+          content: '…削除する手動ステータスは設定されていないのだ。',
+          ephemeral: true
+        });
+      }
+
+      const currentMusic = await getMusicStatusSong(interaction.guild.id, targetChannelId);
+      await setMusicStatusName(interaction.guild.id, '');
+      await setMusicStatusTargetChannel(interaction.guild.id, null);
+
+      // 左側だけを削除。Jockieが同じVCで再生中なら右側は残す
+      await client.rest.put(`/channels/${targetChannelId}/voice-status`, {
+        body: { status: currentMusic?.song || null }
+      });
+
+      console.log(`/status clear: 左側のみ削除 | ${targetChannelId}`);
+      await interaction.reply({ content: '…左側のステータスを削除したのだ。' });
     }
 
-    const name = interaction.options.getString('name', true).trim();
-    if (!name) {
-      return interaction.reply({ content: '…空っぽの彩りは設定できないのだ。', ephemeral: true });
-    }
-
-    await setMusicStatusName(interaction.guild.id, name);
-    await setMusicStatusTargetChannel(interaction.guild.id, voiceChannelId);
-
-    // 左側はコマンド実行者のVCだけを変更。Jockieも同じVCにいる場合だけ曲情報を併記する
-    const currentMusic = await getMusicStatusSong(interaction.guild.id);
-    const song = currentMusic?.channelId === voiceChannelId ? currentMusic.song : '';
-    const status = [name, song].filter(Boolean).join('┊︎').slice(0, 500);
-
-    await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
-      body: { status }
-    });
-
-    console.log(`/status即時反映成功: ${status} | ${voiceChannelId}`);
-    await interaction.reply({ content: '…チャンネル名を変形したのだ。…まだまだ和紙の力はこんなものではないぞ？' });
     setTimeout(() => {
       interaction.deleteReply().catch(() => {});
     }, 5000);
