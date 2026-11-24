@@ -6,7 +6,7 @@ if (!process.env.TOKEN) {
 
 const express = require('express');
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, getMusicStatusSong, removeMusicStatusSong, setMusicStatusSong, getMusicStatusTargetChannel } = require('./db/database');
+const { connectDB, startVoiceSession, endVoiceSession, getMusicStatusName, getMusicStatusSong, getMusicStatusSongs, getLatestMusicStatusSong, removeMusicStatusSong, setMusicStatusSong, getMusicStatusTargetChannel } = require('./db/database');
 const commands = require('./config/commands');
 const handleMessage = require('./handlers/messageHandler');
 const handleInteraction = require('./handlers/interactionHandler');
@@ -38,6 +38,43 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates
   ]
 });
+
+// 3体のJockieのうち、最後に曲を更新したbotの曲だけを表示する
+async function refreshGuildMusicStatus(guild, extraChannelIds = []) {
+  const records = await getMusicStatusSongs(guild.id);
+  const activeRecords = records.filter((record) => {
+    const voiceState = guild.voiceStates.cache.get(record.botId);
+    return voiceState?.channelId === record.channelId;
+  });
+  activeRecords.sort(
+    (a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)
+  );
+
+  const latest = activeRecords[0] || null;
+  const manualChannelId = await getMusicStatusTargetChannel(guild.id);
+  const manualName = await getMusicStatusName(guild.id);
+  const channelIds = new Set([
+    ...records.map((record) => record.channelId),
+    ...extraChannelIds.filter(Boolean),
+    manualChannelId
+  ].filter(Boolean));
+
+  for (const channelId of channelIds) {
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) continue;
+
+    const hasHumans = channel.members?.some((member) => !member.user.bot) || false;
+    const left = channelId === manualChannelId && hasHumans ? manualName : '';
+    const right = latest?.channelId === channelId ? latest.song : '';
+    const status = [left, right].filter(Boolean).join('┊︎').slice(0, 500);
+
+    await client.rest.put(`/channels/${channelId}/voice-status`, {
+      body: { status: status || null }
+    });
+  }
+
+  return latest;
+}
 
 // 🛡️ クラッシュ防止エラーハンドラ
 client.on('error', (error) => {
@@ -91,12 +128,11 @@ client.on('messageCreate', (message) => {
   });
 });
 
-// Jockie Musicの再生通知から曲情報を読み取り、VCステータスを更新
+// Jockie Music 3体の再生通知を記録し、全体で最新の1曲だけを表示
 client.on('messageCreate', async (message) => {
   try {
     if (!message.guild || !JOCKIE_MUSIC_BOT_IDS.has(message.author.id)) return;
 
-    // Jockieの「Started playing」Embedだけを対象にする
     const embed = message.embeds.find((item) =>
       item.author?.name?.toLowerCase().includes('started playing') &&
       item.fields?.some((field) => field.name?.trim().toLowerCase() === 'playing')
@@ -108,8 +144,6 @@ client.on('messageCreate', async (message) => {
     );
     if (!playingField?.value) return;
 
-    // DiscordのMarkdownリンクから、リンク先URLではなく表示文字列を取り出す
-    // 正規表現を使わず、Markdownの [表示文字列](URL) を処理する
     const rawPlayingText = playingField.value.trim();
     const labelStart = rawPlayingText.indexOf('[');
     const labelEnd = rawPlayingText.lastIndexOf('](');
@@ -128,50 +162,33 @@ client.on('messageCreate', async (message) => {
       .filter(Boolean)
       .join(' ');
 
-    const byIndex = playingText.toLowerCase().lastIndexOf(' by ');
-    if (byIndex <= 0) {
+    if (!playingText.toLowerCase().includes(' by ')) {
       console.log('JockieのPlaying欄は曲情報形式ではないためスキップ:', playingText);
       return;
     }
 
-    const title = playingText.slice(0, byIndex).trim();
-    const artist = playingText.slice(byIndex + 4).trim();
-
-    // 曲情報の出所としてJockieの参加VCを記録
     const jockieVoiceState = message.guild.voiceStates.cache.get(message.author.id);
     const jockieChannelId = jockieVoiceState?.channelId;
-    if (!jockieChannelId) {
-      console.log('Jockieの参加VCを特定できません:', message.author.tag);
-      return;
-    }
+    if (!jockieChannelId) return;
 
-    // 最新曲を保存。曲情報の表示先はJockie自身が参加しているVC
-    await setMusicStatusSong(message.guild.id, jockieChannelId, playingText);
-
-    // 左側の名前用VCとJockieのVCが同じ場合だけ、同じステータス内に左右を並べる
-    const statusChannelId = await getMusicStatusTargetChannel(message.guild.id);
-    const statusName = await getMusicStatusName(message.guild.id);
-    const statusChannel = message.guild.channels.cache.get(statusChannelId);
-    const hasHumanMembers = statusChannel?.members?.some((member) => !member.user.bot) || false;
-    const status = (statusChannelId === jockieChannelId && hasHumanMembers
-      ? [statusName, playingText]
-      : [playingText])
-      .filter(Boolean)
-      .join('┊︎')
-      .slice(0, 500);
-
-    const targetVoiceChannel = message.guild.channels.cache.get(jockieChannelId);
-    if (!targetVoiceChannel) {
-      console.log('Jockieの参加VCがサーバー内に見つかりません:', jockieChannelId);
-      return;
-    }
-
-    await client.rest.put(`/channels/${jockieChannelId}/voice-status`, {
-      body: { status }
-    });
-    console.log(
-      `Jockie側VCステータス更新成功: ${status} | チャンネル: ${targetVoiceChannel.name} (${jockieChannelId})`
+    const previousRecords = await getMusicStatusSongs(message.guild.id);
+    const previousRecord = previousRecords.find(
+      (record) => record.botId === message.author.id
     );
+
+    await setMusicStatusSong(
+      message.guild.id,
+      message.author.id,
+      jockieChannelId,
+      playingText
+    );
+
+    await refreshGuildMusicStatus(
+      message.guild,
+      [previousRecord?.channelId, jockieChannelId]
+    );
+
+    console.log(`Jockie最新曲を更新: ${playingText} | bot: ${message.author.id} | VC: ${jockieChannelId}`);
   } catch (error) {
     console.error('Jockie曲情報・VCステータス更新エラー:', error);
   }
@@ -183,53 +200,22 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     const member = newState.member || oldState.member;
     if (!member) return;
 
-    // Jockie MusicがVCから退出、または別のVCへ移動したら元のVCステータスを消す
+    // Jockieが退出・移動したら、そのbotの曲を候補から外して次に新しい曲へ切り替える
     const isJockieMusic = JOCKIE_MUSIC_BOT_IDS.has(member.id);
     const leftVoiceChannel =
       oldState.channelId && oldState.channelId !== newState.channelId;
 
     if (isJockieMusic && leftVoiceChannel) {
       try {
-        // 同じVCに別の対象Jockieが残っているなら、右側の曲情報は消さない
-        const anotherJockieRemains = oldState.guild.voiceStates.cache.some(
-          (voiceState) =>
-            voiceState.channelId === oldState.channelId &&
-            JOCKIE_MUSIC_BOT_IDS.has(voiceState.id) &&
-            voiceState.id !== member.id
-        );
-
-        if (anotherJockieRemains) {
-          console.log(`Jockie退出: 同じVCに別のJockieがいるため曲情報を維持: ${oldState.channelId}`);
-        } else {
-          const statusChannelId = await getMusicStatusTargetChannel(oldState.guild.id);
-          await removeMusicStatusSong(oldState.guild.id, oldState.channelId);
-
-          if (oldState.channelId === statusChannelId) {
-          // 同じVCなら曲情報を削除。人が残っている場合だけ左側を維持
-          const oldChannel = oldState.guild.channels.cache.get(oldState.channelId);
-          const hasHumanMembers = oldChannel?.members?.some((voiceMember) => !voiceMember.user.bot) || false;
-          const statusName = hasHumanMembers
-            ? await getMusicStatusName(oldState.guild.id)
-            : '';
-          await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
-            body: { status: statusName || null }
-          });
-          console.log(`Jockie退出: 曲情報を削除し、左側のみ${statusName ? '維持' : '削除'}: ${oldState.channelId}`);
-        } else {
-          // 別VCならJockie側だけを消し、/status側のVCには触れない
-          await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
-            body: { status: null }
-          });
-          console.log(`Jockie退出: Jockie側VCステータスをクリア: ${oldState.channelId}`);
-          }
-        }
+        await removeMusicStatusSong(oldState.guild.id, member.id);
+        await refreshGuildMusicStatus(oldState.guild, [oldState.channelId, newState.channelId]);
+        console.log(`Jockie退出・移動: 次に新しい曲へ更新 | bot: ${member.id}`);
       } catch (error) {
-        console.error('VCステータスのクリアに失敗:', error);
+        console.error('Jockie退出時の曲切り替えに失敗:', error);
       }
     }
 
     // 人間が最後の1人としてVCを退出したら、/status由来の左側だけを消す
-    // Jockie由来の右側（曲情報）はここでは変更しない
     if (!member.user.bot && oldState.channelId && oldState.channelId !== newState.channelId) {
       const oldChannel = oldState.guild.channels.cache.get(oldState.channelId);
       const hasHumanMembers = oldChannel
@@ -244,18 +230,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       if (!hasHumanMembers) {
         try {
           const statusChannelId = await getMusicStatusTargetChannel(oldState.guild.id);
-
-          // /statusを実行した人のVCだけを対象にする
           if (oldState.channelId === statusChannelId) {
-            const music = await getMusicStatusSong(oldState.guild.id, oldState.channelId);
-            const rightSide = music?.song || null;
-
-            await client.rest.put(`/channels/${oldState.channelId}/voice-status`, {
-              body: { status: rightSide || null }
-            });
-            console.log(
-              `VC無人: 左側の手動ステータスだけを削除${rightSide ? '（Jockieの曲情報は維持）' : ''}: ${oldState.channelId}`
-            );
+            await refreshGuildMusicStatus(oldState.guild, [oldState.channelId]);
+            console.log(`VC無人: 左側の手動ステータスを削除: ${oldState.channelId}`);
           }
         } catch (error) {
           console.error('左側ステータスの削除に失敗:', error);
