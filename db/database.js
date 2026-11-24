@@ -199,30 +199,47 @@ async function getMusicStatusName(guildId) {
   return doc?.name || '';
 }
 
-// VCごとにJockieの曲情報を保存（3つのJockieが別々のVCにいても独立）
-async function setMusicStatusSong(guildId, channelId, song) {
+// Jockie 3体それぞれの最新曲を保存（botごとにVC・曲・更新時刻を保持）
+async function setMusicStatusSong(guildId, botId, channelId, song) {
   if (!musicStatusNamesCollection) throw new Error('MongoDBに接続されていません');
   await musicStatusNamesCollection.updateOne(
     { _id: guildId },
-    { $set: { [`songs.${channelId}`]: song, songUpdatedAt: new Date() } },
+    {
+      $set: {
+        [`songs.${botId}`]: { botId, channelId, song, updatedAt: new Date() }
+      }
+    },
     { upsert: true }
   );
 }
 
-async function getMusicStatusSong(guildId, channelId) {
-  if (!musicStatusNamesCollection) return null;
+async function getMusicStatusSongs(guildId) {
+  if (!musicStatusNamesCollection) return [];
   const doc = await musicStatusNamesCollection.findOne({ _id: guildId });
-  // 旧形式（channelId/song）で保存された曲情報も読み取れるようにする
-  const song = doc?.songs?.[channelId] ||
-    (doc?.channelId === channelId ? doc.song : null);
-  return song ? { channelId, song } : null;
+  const songs = Object.values(doc?.songs || {}).filter(
+    (item) => item && item.botId && item.channelId && item.song
+  );
+  return songs;
 }
 
-async function removeMusicStatusSong(guildId, channelId) {
+async function getLatestMusicStatusSong(guildId) {
+  const songs = await getMusicStatusSongs(guildId);
+  songs.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+  return songs[0] || null;
+}
+
+async function getMusicStatusSong(guildId, channelId) {
+  const songs = await getMusicStatusSongs(guildId);
+  songs.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+  const item = songs.find((song) => song.channelId === channelId);
+  return item ? { channelId, song: item.song } : null;
+}
+
+async function removeMusicStatusSong(guildId, botId) {
   if (!musicStatusNamesCollection) return;
   await musicStatusNamesCollection.updateOne(
     { _id: guildId },
-    { $unset: { [`songs.${channelId}`]: '' } }
+    { $unset: { [`songs.${botId}`]: '' } }
   );
 }
 
@@ -378,6 +395,8 @@ module.exports = {
   getMusicStatusName,
   setMusicStatusSong,
   getMusicStatusSong,
+  getMusicStatusSongs,
+  getLatestMusicStatusSong,
   removeMusicStatusSong,
   setMusicStatusTargetChannel,
   getMusicStatusTargetChannel
