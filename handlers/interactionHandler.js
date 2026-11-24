@@ -10,6 +10,7 @@ const {
   getCustomReplies,
   setMusicStatusName,
   getMusicStatusSong,
+  getLatestMusicStatusSong,
   setMusicStatusTargetChannel,
   removeCustomReplyForUndo,
   createReplyUndoAction,
@@ -171,7 +172,8 @@ async function handleInteraction(interaction, client) {
       // 以前のVCに残った手動ステータスを先に片付ける（曲情報は残す）
       const previousTargetChannelId = await getMusicStatusTargetChannel(interaction.guild.id);
       if (previousTargetChannelId && previousTargetChannelId !== voiceChannelId) {
-        const previousMusic = await getMusicStatusSong(interaction.guild.id, previousTargetChannelId);
+        const latestMusic = await getLatestMusicStatusSong(interaction.guild.id);
+        const previousMusic = latestMusic?.channelId === previousTargetChannelId ? latestMusic : null;
         await client.rest.put(`/channels/${previousTargetChannelId}/voice-status`, {
           body: { status: previousMusic?.song || null }
         });
@@ -180,7 +182,8 @@ async function handleInteraction(interaction, client) {
       await setMusicStatusName(interaction.guild.id, name);
       await setMusicStatusTargetChannel(interaction.guild.id, voiceChannelId);
 
-      const currentMusic = await getMusicStatusSong(interaction.guild.id, voiceChannelId);
+      const latestMusic = await getLatestMusicStatusSong(interaction.guild.id);
+      const currentMusic = latestMusic?.channelId === voiceChannelId ? latestMusic : null;
       const status = [name, currentMusic?.song].filter(Boolean).join('┊︎').slice(0, 500);
 
       await client.rest.put(`/channels/${voiceChannelId}/voice-status`, {
@@ -198,7 +201,8 @@ async function handleInteraction(interaction, client) {
         });
       }
 
-      const currentMusic = await getMusicStatusSong(interaction.guild.id, targetChannelId);
+      const latestMusic = await getLatestMusicStatusSong(interaction.guild.id);
+      const currentMusic = latestMusic?.channelId === targetChannelId ? latestMusic : null;
       await setMusicStatusName(interaction.guild.id, '');
       await setMusicStatusTargetChannel(interaction.guild.id, null);
 
