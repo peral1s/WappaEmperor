@@ -207,9 +207,23 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
     if (isJockieMusic && leftVoiceChannel) {
       try {
-        await removeMusicStatusSong(oldState.guild.id, member.id);
+        const records = await getMusicStatusSongs(oldState.guild.id);
+        const previousRecord = records.find((record) => record.botId === member.id);
+
+        if (newState.channelId && previousRecord) {
+          // VC移動なら再生中の曲を新しいVCへ引き継ぐ。完全退出なら候補から外す
+          await setMusicStatusSong(
+            oldState.guild.id,
+            member.id,
+            newState.channelId,
+            previousRecord.song
+          );
+        } else {
+          await removeMusicStatusSong(oldState.guild.id, member.id);
+        }
+
         await refreshGuildMusicStatus(oldState.guild, [oldState.channelId, newState.channelId]);
-        console.log(`Jockie退出・移動: 次に新しい曲へ更新 | bot: ${member.id}`);
+        console.log(`Jockie退出・移動: 最新曲候補を再計算 | bot: ${member.id}`);
       } catch (error) {
         console.error('Jockie退出時の曲切り替えに失敗:', error);
       }
