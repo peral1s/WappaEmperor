@@ -212,7 +212,9 @@ async function setMusicStatusSong(guildId, channelId, song) {
 async function getMusicStatusSong(guildId, channelId) {
   if (!musicStatusNamesCollection) return null;
   const doc = await musicStatusNamesCollection.findOne({ _id: guildId });
-  const song = doc?.songs?.[channelId];
+  // 旧形式（channelId/song）で保存された曲情報も読み取れるようにする
+  const song = doc?.songs?.[channelId] ||
+    (doc?.channelId === channelId ? doc.song : null);
   return song ? { channelId, song } : null;
 }
 
